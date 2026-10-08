@@ -42,6 +42,7 @@ test('find your method gives a starter set', async ({ page }) => {
 
 test('every guide section and item opens without errors', async ({ page }) => {
   const errors = await open(page, 'en', '#/learn/guide');
+  await expect(page.locator('a.card').first()).toBeVisible();
   const hrefs = await page.locator('a.card').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
   expect(hrefs.length).toBeGreaterThan(10);
   for (const href of hrefs) {
