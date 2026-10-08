@@ -2,6 +2,8 @@ import { h, toast } from '../core/dom.js';
 import { t, LANGS, lang, setLang } from '../core/i18n.js';
 import * as store from '../core/store.js';
 import { applyTheme, rebuild } from '../main.js';
+import { aiSettings } from '../ai/settings.js';
+import { cloudSettings } from '../cloud/settings.js';
 
 function seg(options, value, onPick) {
   const wrap = h('div.seg', { role: 'group' });
@@ -45,6 +47,8 @@ export function settings() {
       h('div', h('span.label', t('settings.theme')),
         seg([{ value: 'auto', label: t('settings.theme.auto') }, { value: 'light', label: t('settings.theme.light') }, { value: 'dark', label: t('settings.theme.dark') }],
           s.theme || 'auto', (v) => { store.update('settings', (x) => ({ ...x, theme: v })); applyTheme(v); }))),
+    cloudSettings(),
+    aiSettings(),
     h('div.stack',
       h('h2', t('settings.data')),
       h('p.muted', t('settings.dataText')),

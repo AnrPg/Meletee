@@ -8,6 +8,8 @@ import { reviews } from './reviews.js';
 import { plan } from './plan.js';
 import { workspaces, workspace } from './workspace.js';
 import { settings } from './settings.js';
+import { registerGrow } from './grow/index.js';
+import { registerBuddies } from './buddies/index.js';
 import { h } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 
@@ -36,8 +38,8 @@ export function registerViews(router) {
   router.route('/do/plan', plan);
   router.route('/ws', workspaces);
   router.route('/ws/:id', workspace);
-  router.route('/grow', () => soon('grow'));
-  router.route('/buddies', () => soon('buddies'));
+  registerGrow(router);
+  registerBuddies(router);
   router.route('/settings', settings);
 }
 
