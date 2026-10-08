@@ -2,6 +2,25 @@ import { h, sheet } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import * as store from '../core/store.js';
 import { companion } from '../ui/art.js';
+import { snapshot, why } from '../grow/data.js';
+import { insightOfDay } from '../grow/insights.js';
+import { garden } from './grow/ui.js';
+import { streakLine } from './grow/home.js';
+
+// One small, calm glimpse of the Grow garden and today's insight.
+function glimpse() {
+  let snap;
+  try { snap = snapshot(); } catch { return null; }
+  const w = why();
+  const ins = insightOfDay();
+  return h('div.stack.home-grow',
+    w.home && w.text ? h('a.home-why', { href: '#/grow/why' }, h('span', { 'aria-hidden': 'true' }, '💜 '), h('q', w.text)) : null,
+    h('a.card.soft-card.home-glimpse', { href: '#/grow', 'aria-label': `${t('nav.grow')}: ${streakLine(snap.streak)}` },
+      garden({ stage: snap.stage, sunny: snap.studiedToday, small: true }),
+      h('div',
+        h('p.small.muted', { style: { margin: 0 } }, '🍃 ', streakLine(snap.streak)),
+        h('p.small', { style: { margin: '4px 0 0' } }, '💡 ', t(`grow.insight.${ins.n}`)))));
+}
 
 function greeting() {
   const hr = new Date().getHours();
@@ -27,9 +46,11 @@ function whatNow() {
 
 export function home() {
   const name = store.get('profile', {}).name;
-  return h('section.hero',
-    companion({ mood: 'happy', leaves: 2, label: t('companion.label') }),
-    h('h1', name ? `${greeting()}, ${name}` : greeting()),
-    h('p.lede', t('home.lede')),
-    h('button.btn', { onclick: whatNow }, t('home.whatNow')));
+  return h('div.stack',
+    h('section.hero',
+      companion({ mood: 'happy', leaves: 2, label: t('companion.label') }),
+      h('h1', name ? `${greeting()}, ${name}` : greeting()),
+      h('p.lede', t('home.lede')),
+      h('button.btn', { onclick: whatNow }, t('home.whatNow'))),
+    glimpse());
 }

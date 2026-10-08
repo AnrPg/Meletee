@@ -55,7 +55,11 @@ export default async function mount(root, api) {
       h('div.stack',
         h('div.field-row', h('label', { for: 'pretest-topic' }, t('topicQ')), api.topicPicker(topic, (v) => { topic = v; })),
         h('div.field-row', h('label', { for: 'pretest-questions' }, t('questionsLabel')), area),
-        h('div.row', h('button.btn.soft.small', { type: 'button', onclick: fromCards }, t('fromCards'))),
+        h('div.row', h('button.btn.soft.small', { type: 'button', onclick: fromCards }, t('fromCards')),
+          api.ai ? api.ai.button('questions', () => ({ topic: api.topicName(topic) }), { onResult: (qs) => {
+            for (const x of qs) answers.set(x.q.trim(), x.a);
+            area.value = [area.value.trim(), ...qs.map((x) => x.q.trim())].filter(Boolean).join('\n');
+          } }) : null),
         h('p.muted.small', t('questionsHelp'))),
       h('div.row', h('button.btn', { type: 'submit' }, t('toGuess')))));
     area.focus();

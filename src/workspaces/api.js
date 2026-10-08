@@ -4,12 +4,14 @@
 //
 // api.data(key, fallback) / api.save(key, value) keep the workspace's own data under
 // meletee1:<account>:a:ws:<workspace>:<key>. api.topicPicker() lets the learner tie
-// work to one of their courses and topics. api.ai is null until phase 4 adds the
-// Claude/Gemini tutors; workspaces must work fully without it.
+// work to one of their courses and topics. api.ai holds the Claude/Gemini tutors when the
+// learner has a key (api.ai.button(task, context, opts) → one quiet button), and is null
+// otherwise; workspaces must work fully without it.
 import * as store from '../core/store.js';
 import * as study from '../core/study.js';
 import { h } from '../core/dom.js';
 import { t } from '../core/i18n.js';
+import { forWorkspace } from '../ai/ui.js';
 
 export function makeApi(ws) {
   const key = (k) => `ws:${ws.id}:${k}`;
@@ -41,6 +43,7 @@ export function makeApi(ws) {
       const tp = ref.topicId && c.topics.find((x) => x.id === ref.topicId);
       return tp ? `${c.name} › ${tp.title}` : c.name;
     },
-    ai: null,
+    // The AI tutors (src/ai): null without a key or a connection. See docs/AI.md.
+    ai: forWorkspace(ws),
   };
 }

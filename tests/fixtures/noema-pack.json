@@ -1,0 +1,649 @@
+{
+ "format": "noema-pack",
+ "v": 1,
+ "subject": {
+  "id": "databricks",
+  "title": "Databricks",
+  "appTitle": "Databricks Quest",
+  "emoji": "🧱",
+  "group": "data-cloud",
+  "description": "Lakehouse platform, Delta Lake, compute, Unity Catalog, ingestion and Structured Streaming — exam-ready and project-ready.",
+  "language": "en",
+  "owner": null,
+  "features": {
+   "math": false,
+   "code": true
+  },
+  "hero": {
+   "headline": "Master **Databricks**, one bite at a time.",
+   "mantra": "**Spark computes. Storage persists. Delta gives stored files table semantics. Unity Catalog governs the objects.** Databricks integrates the pieces into one platform."
+  },
+  "searchExamples": "VACUUM, widgets, Dedicated, CDC",
+  "tutor": {
+   "name": "Brick",
+   "avatar": "🦉",
+   "domain": "Databricks",
+   "prior": "They already know Spark fundamentals (execution hierarchy, partitions, shuffle, Catalyst/AQE, joins, Spark UI) and are preparing for the Databricks Data Engineer exams while building real projects.",
+   "examples": "Concrete e-shop examples (orders, customers).",
+   "interviewer": "a senior interviewer hiring a Databricks Data Engineer",
+   "simulation": "a failing job, PERMISSION_DENIED, missing rows, duplicates, slow query, OOM, MERGE error, wrong compute, stuck stream",
+   "terminology": "\"Unity Catalog\", \"Auto Loader\", \"MERGE INTO\", \"Deletion Vectors\", \"Watermarks\"",
+   "examinerRole": "Databricks examiner"
+  },
+  "authoring": {
+   "minVisualPerChapter": 3,
+   "minExercisesPerPicture": 3
+  }
+ },
+ "builtAt": "2026-10-06T19:41:14+00:00",
+ "version": "cc44939c9acaae9f",
+ "sources": {
+  "sources": [],
+  "chapters": {},
+  "patches": {}
+ },
+ "media": {},
+ "chapters": [
+  {
+   "id": "ch01",
+   "num": 1,
+   "title": "Foundations: Storage, Tables & Transactions",
+   "subtitle": "Why a folder of Parquet files isn't a table, and what Delta, Spark and Unity Catalog each add",
+   "emoji": "🧱",
+   "sourcePages": "1–26",
+   "mantra": "Spark computes. Storage persists. Delta gives stored files table semantics. Unity Catalog governs the objects.",
+   "objectives": [
+    "You can explain why compute and storage have independent lifetimes, and what survives cluster termination.",
+    "You can explain why a file is not a table and why Parquet alone is not enough for concurrent updates."
+   ],
+   "sections": [
+    {
+     "id": "ch01-s01",
+     "title": "Orientation: From Spark to Databricks",
+     "hook": "You already know Spark's engine. Now you learn the platform built around it.",
+     "blocks": [
+      {
+       "t": "p",
+       "text": "This course **builds on your Spark knowledge** instead of restarting from zero. Spark ideas come back inside real Databricks debugging cases, not as a separate Spark course."
+      },
+      {
+       "t": "list",
+       "items": [
+        "Execution hierarchy, partitions and **shuffle** mechanics",
+        "Catalyst / AQE, statistics and size estimates",
+        "`df.explain(mode=\"extended\")` and `df.explain(mode=\"cost\")`",
+        "Spark UI reasoning",
+        "Physical join strategies: BHJ, SMJ, SHJ, BNLJ"
+       ],
+       "ordered": false
+      }
+     ]
+    },
+    {
+     "id": "ch01-s02",
+     "title": "Compute vs Storage: Independent Lifetimes",
+     "hook": "Clusters come and go. Your data must not.",
+     "blocks": [
+      {
+       "t": "p",
+       "text": "Imagine an e-shop with `customers`, `orders` and `products`. Something must **store** those bytes while nobody is processing them."
+      },
+      {
+       "t": "p",
+       "text": "Something else must **execute** a query over them:"
+      }
+     ]
+    }
+   ],
+   "debug": [
+    {
+     "id": "ch01-d01",
+     "title": "Table \"disappeared\" after the cluster was terminated",
+     "section": "ch01-s10",
+     "symptom": "You (or a teammate) believe `prod.sales.orders` is gone because the cluster that wrote it was terminated, or a query from new compute can't find it.",
+     "askYourself": [
+      "Am I confusing the compute resource (driver, executors, RAM) with the table (Parquet files + log in cloud storage)?",
+      "Was the data ever persisted with saveAsTable / format(\"delta\").save, or did it only live in a DataFrame in memory?",
+      "Did the write actually commit a table version?",
+      "Am I querying the exact three-level name (catalog.schema.table) I wrote to?",
+      "Is my new compute pointing at the same catalog and storage?"
+     ],
+     "steps": [
+      {
+       "do": "Restate the model: compute and persistent storage have independent lifetimes.",
+       "why": "Terminating compute removes RAM and temporary shuffle files, not the table."
+      },
+      {
+       "do": "Query the full name from new compute.",
+       "why": "Rules out a wrong catalog or schema.",
+       "code": "SELECT * FROM prod.sales.orders LIMIT 10;"
+      },
+      {
+       "do": "Check the original write code.",
+       "why": "A DataFrame that was never written lived only in executor memory.",
+       "code": "df.write.saveAsTable(\"prod.sales.orders\")"
+      },
+      {
+       "do": "Confirm the write committed (a new version exists in the table's log).",
+       "why": "Physically written but uncommitted files are not a published table."
+      }
+     ],
+     "rootCauses": [
+      "Mental model error: equating cluster lifetime with table lifetime",
+      "Data was never persisted (only an in-memory DataFrame)",
+      "Write never committed",
+      "Wrong catalog/schema in the name"
+     ],
+     "fix": "Query the table from any compute using its full three-level name. If it was never persisted or committed, write it with saveAsTable (or format(\"delta\").save) and confirm the commit.",
+     "mnemonic": "Cluster dies, table stays."
+    }
+   ],
+   "pitfalls": [
+    {
+     "title": "Parquet files ≠ Delta table",
+     "text": "A folder of `part-*.parquet` files is not automatically a Delta table.",
+     "fix": "Delta = Parquet + `_delta_log`. No log means no Delta."
+    }
+   ],
+   "flashcards": [
+    {
+     "q": "What's the chapter mantra?",
+     "a": "Spark computes. Storage persists. Delta gives stored files table semantics. Unity Catalog governs the objects.",
+     "section": "ch01-s01"
+    },
+    {
+     "q": "Which question does storage answer?",
+     "a": "Where are the bytes after my program stops running?",
+     "section": "ch01-s02"
+    },
+    {
+     "q": "Which question does compute answer?",
+     "a": "Which CPUs and RAM execute my code?",
+     "section": "ch01-s02"
+    }
+   ],
+   "exercises": [
+    {
+     "id": "ch01-e001",
+     "type": "mcq",
+     "section": "ch01-s01",
+     "difficulty": 1,
+     "tags": [
+      "concept"
+     ],
+     "quick": true,
+     "q": "Which topic is **NOT** part of *Prerequisites — Round 1* in the mastery DAG?",
+     "options": [
+      "ACID transactions",
+      "columnar storage / Parquet",
+      "ETL vs ELT",
+      "transaction logs"
+     ],
+     "answer": 2,
+     "why": [
+      "Round 1: needed to understand Delta.",
+      "Round 1: explains column pruning.",
+      "Correct: this is the first Round 2 topic.",
+      "Round 1: the core of Delta Lake."
+     ],
+     "explain": "ETL vs ELT opens **Round 2**, which moves from the storage model to the pipeline model. Round 1 is about storage, tables and transactions: compute vs storage, object storage, file ≠ table, Parquet, metadata, ACID, transaction logs and the lakehouse motivation."
+    },
+    {
+     "id": "ch01-e002",
+     "type": "cloze",
+     "section": "ch01-s01",
+     "difficulty": 1,
+     "tags": [
+      "concept"
+     ],
+     "quick": true,
+     "q": "Complete the chapter mantra.",
+     "text": "Spark [[computes]]. Storage [[persists]]. [[Delta|Delta Lake]] gives stored files table semantics. [[Unity Catalog|UC]] governs the objects. Databricks [[integrates]] these pieces into one platform.",
+     "bank": [
+      "Parquet",
+      "Photon",
+      "executes",
+      "stores",
+      "replaces"
+     ],
+     "explain": "Each clause names one layer and its single job. Spark (compute) **computes**. Cloud storage **persists**. Delta turns stored Parquet files into **tables** with transactions. Unity Catalog **governs** (names, permissions). Databricks is the platform that **integrates** all of them."
+    },
+    {
+     "id": "ch01-e003",
+     "type": "match",
+     "section": "ch01-s01",
+     "difficulty": 2,
+     "tags": [
+      "concept"
+     ],
+     "quick": true,
+     "q": "Match each Spark abbreviation you already studied to its meaning.",
+     "pairs": [
+      [
+       "BHJ",
+       "Broadcast Hash Join"
+      ],
+      [
+       "SMJ",
+       "Sort-Merge Join"
+      ],
+      [
+       "SHJ",
+       "Shuffled Hash Join"
+      ],
+      [
+       "BNLJ",
+       "Broadcast Nested Loop Join"
+      ],
+      [
+       "AQE",
+       "Adaptive Query Execution"
+      ]
+     ],
+     "explain": "These are the four physical join strategies plus AQE from your Spark foundation. BHJ avoids shuffling the big side by broadcasting the small one. SMJ shuffles and sorts both sides. SHJ shuffles both sides and hashes per partition. BNLJ is the costly fallback for non-equi joins. AQE re-plans at runtime from real statistics."
+    },
+    {
+     "id": "ch01-e004",
+     "type": "tf",
+     "section": "ch01-s01",
+     "difficulty": 1,
+     "tags": [
+      "exam"
+     ],
+     "quick": false,
+     "q": "The current Databricks Data Engineer Associate exam is mostly about memorizing syntax. Operational topics such as OOM diagnosis and skew are not tested.",
+     "answer": false,
+     "explain": "False. The current exam guide explicitly includes Spark UI troubleshooting, skew/shuffle/spill, **OOM diagnosis**, CI/CD/Automation Bundles, Lakeflow Jobs and governance. That is why this course trains reasoning and debugging, not just syntax."
+    },
+    {
+     "id": "ch01-e005",
+     "type": "mcq",
+     "section": "ch01-s01",
+     "difficulty": 2,
+     "tags": [
+      "exam"
+     ],
+     "quick": false,
+     "q": "Which of these are named in the source as topics of the current Associate exam? (Select all that apply.)",
+     "multi": true,
+     "options": [
+      "Liquid Clustering",
+      "Predictive optimization",
+      "Spark UI troubleshooting",
+      "CI/CD / Automation Bundles",
+      "Writing custom JVM garbage collectors"
+     ],
+     "answer": [
+      0,
+      1,
+      2,
+      3
+     ],
+     "why": [
+      "Listed.",
+      "Listed.",
+      "Listed.",
+      "Listed.",
+      "Not listed. JVM internals are not part of the exam."
+     ],
+     "explain": "Liquid Clustering, predictive optimization, Spark UI troubleshooting and CI/CD with Automation Bundles all appear in the exam list. Writing custom JVM garbage collectors does not. The exam tests platform operation, not JVM internals."
+    },
+    {
+     "id": "ch01-e006",
+     "type": "bucket",
+     "section": "ch01-s01",
+     "difficulty": 1,
+     "tags": [
+      "concept"
+     ],
+     "quick": false,
+     "q": "Sort each topic into its place in the mastery DAG.",
+     "buckets": [
+      "Existing Spark knowledge",
+      "Prerequisites Round 1",
+      "Prerequisites Round 2"
+     ],
+     "items": [
+      {
+       "text": "Catalyst / physical plans",
+       "bucket": 0
+      },
+      {
+       "text": "AQE",
+       "bucket": 0
+      },
+      {
+       "text": "DataFrame API",
+       "bucket": 0
+      },
+      {
+       "text": "compute vs storage",
+       "bucket": 1
+      },
+      {
+       "text": "ACID transactions",
+       "bucket": 1
+      },
+      {
+       "text": "transaction logs",
+       "bucket": 1
+      },
+      {
+       "text": "data lake → lakehouse motivation",
+       "bucket": 1
+      },
+      {
+       "text": "ETL vs ELT",
+       "bucket": 2
+      }
+     ],
+     "explain": "Your **existing Spark knowledge** covers the execution engine: Catalyst, AQE, the DataFrame API and joins. **Round 1** builds the storage and table model (compute vs storage, ACID, transaction logs, lakehouse motivation). **Round 2** starts the pipeline model with ETL vs ELT."
+    }
+   ],
+   "src": "part1"
+  },
+  {
+   "id": "ch02",
+   "num": 2,
+   "title": "Data Engineering Building Blocks",
+   "subtitle": "ETL/ELT, batch vs streaming vs incremental, checkpoints, CDC, schema contracts and the medallion architecture",
+   "emoji": "🧱",
+   "sourcePages": "26–52",
+   "mantra": "Keep the raw truth, process only what changed, respect the schema contract, and refine data step by step from Bronze to Gold.",
+   "objectives": [
+    "You can explain where the transformation happens in ETL vs ELT, and why keeping raw data lets you rebuild everything downstream.",
+    "You can classify any workload on two independent axes: batch vs streaming, and full recompute vs incremental."
+   ],
+   "sections": [
+    {
+     "id": "ch02-s01",
+     "title": "From Storage Model to Pipeline Model",
+     "hook": "Every Databricks product solves one pipeline problem. Learn the problems first and the product names become easy labels.",
+     "blocks": [
+      {
+       "t": "p",
+       "text": "Round 1 built the **storage model**: who computes, how files are stored, and who governs them."
+      },
+      {
+       "t": "table",
+       "head": [
+        "Component",
+        "Role in one phrase"
+       ],
+       "rows": [
+        [
+         "Spark",
+         "compute (the execution engine)"
+        ],
+        [
+         "Parquet",
+         "file format"
+        ],
+        [
+         "Delta Lake",
+         "transactional table layer"
+        ],
+        [
+         "Unity Catalog",
+         "metadata + governance"
+        ],
+        [
+         "Cloud storage",
+         "durable (permanent) storage"
+        ]
+       ],
+       "caption": "Recap of Round 1"
+      }
+     ]
+    },
+    {
+     "id": "ch02-s02",
+     "title": "ETL vs ELT",
+     "hook": "The real question is WHERE the transformation happens — and whether you keep the raw data.",
+     "blocks": [
+      {
+       "t": "p",
+       "text": "Imagine a company with **PostgreSQL** (`customers`, `orders`), the **Shopify API** (`products`) and **CSV files** (marketing campaigns). You want all of it in your analytics system."
+      },
+      {
+       "t": "terms",
+       "items": [
+        {
+         "term": "Extract",
+         "def": "Take data out of the source, e.g. `SELECT ...` from PostgreSQL → raw orders."
+        },
+        {
+         "term": "Transform",
+         "def": "Change the data: clean, cast, validate, join."
+        },
+        {
+         "term": "Load",
+         "def": "Write the data into the target system, e.g. the Delta table `company.silver.orders`."
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "debug": [
+    {
+     "id": "ch02-d01",
+     "title": "Write fails: AnalysisException — schema mismatch",
+     "section": "ch02-s09",
+     "symptom": "A pipeline that worked yesterday fails today with `AnalysisException ... schema mismatch` when writing to a Delta table.",
+     "askYourself": [
+      "Did the source schema REALLY change, or only what my code inferred?",
+      "Can I diff yesterday's input schema against today's (columns + types)?",
+      "If it changed: was it intentional — announced, documented, agreed with the producer?",
+      "If intentional: what is the narrowest evolution I need (add column, rename, widen type) and on which table?",
+      "If not intentional: who owns the source, and how do I stop bad data meanwhile?",
+      "If it did NOT change: did my parsing or type inference produce a different type today?"
+     ],
+     "steps": [
+      {
+       "do": "Compare the incoming schema with the table schema",
+       "why": "Identify exactly which column/type differs.",
+       "code": "df.printSchema()\nDESCRIBE TABLE silver.orders;"
+      },
+      {
+       "do": "Check with the source owner / release notes whether the change was planned",
+       "why": "Only intentional changes should be evolved."
+      },
+      {
+       "do": "If unchanged at source, inspect parsing / type inference (e.g. a stray header row turning INT into STRING)",
+       "why": "The bug may be on our side."
+      },
+      {
+       "do": "Apply a narrow, explicit evolution — or fix the bug — and re-run",
+       "why": "Never 'enable schema evolution everywhere'."
+      }
+     ],
+     "rootCauses": [
+      "Intentional upstream change (e.g. new column) not yet allowed by the table",
+      "Unintentional upstream bug (e.g. amount sent as STRING 'unknown')",
+      "Parsing / type-inference bug in our own ingestion"
+     ],
+     "fix": "Changed + intentional → evolve carefully; changed + unintentional → fix the source; unchanged → fix parsing/inference. Keep enforcement on.",
+     "mnemonic": "Changed? → Intended? → Evolve narrowly. (C-I-E)"
+    }
+   ],
+   "pitfalls": [
+    {
+     "title": "Fighting over the ETL/ELT label",
+     "text": "Databricks calls most pipelines 'ETL' even when they're ELT-like.",
+     "fix": "Focus on where the transformation happens and whether raw is kept."
+    }
+   ],
+   "flashcards": [
+    {
+     "q": "Storage model in five lines?",
+     "a": "Spark = compute · Parquet = file format · Delta Lake = transactional table layer · Unity Catalog = metadata + governance · Cloud storage = durable storage",
+     "section": "ch02-s01"
+    },
+    {
+     "q": "ETL vs ELT in one line?",
+     "a": "ETL transforms before loading; ELT loads raw first and transforms inside the platform.",
+     "section": "ch02-s02"
+    },
+    {
+     "q": "Why does ELT fit a lakehouse?",
+     "a": "Cheap storage for huge raw data + distributed compute on demand → keep raw, transform later, rebuild anytime.",
+     "section": "ch02-s02"
+    }
+   ],
+   "exercises": [
+    {
+     "id": "ch02-e001",
+     "type": "match",
+     "section": "ch02-s01",
+     "difficulty": 1,
+     "tags": [
+      "concept"
+     ],
+     "quick": true,
+     "q": "Match each Round-1 component to its role.",
+     "pairs": [
+      [
+       "Spark",
+       "compute"
+      ],
+      [
+       "Parquet",
+       "file format"
+      ],
+      [
+       "Delta Lake",
+       "transactional table layer"
+      ],
+      [
+       "Unity Catalog",
+       "metadata + governance"
+      ],
+      [
+       "Cloud storage",
+       "durable storage"
+      ]
+     ],
+     "explain": "These five roles are the storage model. Keep them separate: Spark computes but stores nothing permanently; Parquet is just a file layout; Delta adds transactions on top of Parquet; Unity Catalog governs names and permissions; cloud storage holds the bytes."
+    },
+    {
+     "id": "ch02-e002",
+     "type": "order",
+     "section": "ch02-s01",
+     "difficulty": 1,
+     "tags": [
+      "concept"
+     ],
+     "quick": true,
+     "q": "Put the Round-2 concept chain in the order the tutor builds it.",
+     "items": [
+      "Data source",
+      "ETL / ELT",
+      "Batch, streaming, incremental processing",
+      "CDC",
+      "Schema enforcement / evolution",
+      "Bronze → Silver → Gold",
+      "Identities / permissions",
+      "Dev → test → prod and CI/CD"
+     ],
+     "explain": "Data first has to be moved (ETL/ELT), then you decide how often and how much to process, how to capture changes, how to protect the structure, how to organise quality layers — and only then who may access it and how code is shipped safely."
+    },
+    {
+     "id": "ch02-e003",
+     "type": "odd",
+     "section": "ch02-s01",
+     "difficulty": 1,
+     "tags": [
+      "concept"
+     ],
+     "quick": false,
+     "q": "Which one is NOT part of the storage layer of a lakehouse?",
+     "options": [
+      "Parquet",
+      "Delta Lake",
+      "Cloud storage",
+      "Spark"
+     ],
+     "answer": 3,
+     "explain": "Spark is the compute engine; it reads and writes data but is not where data lives. Parquet (file format), Delta Lake (table layer over files) and cloud storage (the bytes) all belong to the storage side."
+    },
+    {
+     "id": "ch02-e004",
+     "type": "tf",
+     "section": "ch02-s01",
+     "difficulty": 1,
+     "tags": [
+      "concept",
+      "exam"
+     ],
+     "quick": false,
+     "q": "Delta Lake and Parquet are two names for the same thing.",
+     "answer": false,
+     "explain": "Parquet is a columnar *file format*. Delta Lake is a *transactional table layer* built on Parquet files plus a transaction log. Delta ≠ Parquet is one of the Round-1 must-know distinctions."
+    },
+    {
+     "id": "ch02-e005",
+     "type": "mcq",
+     "section": "ch02-s01",
+     "difficulty": 1,
+     "tags": [
+      "concept"
+     ],
+     "quick": false,
+     "q": "Which component answers the question 'who may read `company.finance.payroll`?'",
+     "options": [
+      "Spark",
+      "Parquet",
+      "Unity Catalog",
+      "Cloud storage"
+     ],
+     "answer": 2,
+     "why": [
+      "Spark executes queries; it does not decide permissions.",
+      "Parquet is a file format with no permission model.",
+      "Correct: governance is Unity Catalog's job.",
+      "Storage holds files; table-level access is governed above it."
+     ],
+     "explain": "Unity Catalog is the metadata + governance layer: names (catalog.schema.object) and permissions live there. Spark only executes, Parquet only stores, and cloud storage only holds bytes."
+    },
+    {
+     "id": "ch02-e006",
+     "type": "mcq",
+     "section": "ch02-s02",
+     "difficulty": 1,
+     "tags": [
+      "concept",
+      "exam"
+     ],
+     "quick": true,
+     "q": "An API returns JSON every night. You must never lose the original response, be able to change transformation rules later, and rebuild downstream tables. Which flow fits best?",
+     "options": [
+      "Extract → Transform → Load",
+      "Extract → Load raw → Transform",
+      "Transform → Extract → Load",
+      "Load → Extract → Transform"
+     ],
+     "answer": 1,
+     "why": [
+      "Only the transformed result is stored, so the original is lost.",
+      "Correct: raw is kept immutable and is the rebuild source.",
+      "You cannot transform data you haven't extracted yet.",
+      "You cannot load data you haven't extracted."
+     ],
+     "explain": "Keeping the untouched response first (load raw) and transforming afterwards satisfies all three needs: the original is preserved, rules can change, and downstream tables can be rebuilt from raw. With classic ETL only the transformed output survives."
+    }
+   ],
+   "src": "part1"
+  }
+ ],
+ "counts": {
+  "chapters": 2,
+  "sections": 4,
+  "exercises": 12,
+  "playbooks": 2,
+  "flashcards": 6,
+  "visual": 0,
+  "media": 0,
+  "pictures": 0
+ }
+}

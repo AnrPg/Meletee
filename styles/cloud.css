@@ -1,1 +1,26 @@
-/* cloud */
+/* cloud: sign-in, sync, restore points and the noema-lite screens (phase 6). Tokens only. */
+.cloud .list .label{min-width:0;overflow-wrap:anywhere}
+.cloud-email{display:block;font-weight:500;overflow-wrap:anywhere}
+.cloud-status{flex:none}
+.cloud-form .btn[type="submit"]{width:100%}
+.cloud-form .field-row{font-weight:650}
+.cloud-restore .list>div{flex-wrap:nowrap}
+.cloud-kind{display:block;font-weight:500}
+
+.noema-addrow{display:flex;flex-direction:column;align-items:center;gap:var(--s2)}
+.noema-hint a{color:var(--c);font-weight:650}
+.noema-subj h3{margin:0;overflow-wrap:anywhere}
+.noema-emoji{font-size:28px;line-height:1;flex:none}
+.noema-emoji.big{font-size:48px;display:block;margin-bottom:var(--s3)}
+.noema-desc{margin:var(--s1) 0 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.noema-head h1{overflow-wrap:anywhere}
+.noema-head .lede{margin-top:var(--s2)}
+.noema-actions{display:flex;flex-direction:column;align-items:flex-start}
+.noema-next-text{font-weight:650;margin:0 0 var(--s3);overflow-wrap:anywhere}
+.noema-card .row,.noema-links .row{gap:var(--s2)}
+.noema-card .chip,.noema-links .chip{text-decoration:none;color:var(--ink)}
+.noema-queue .list>a{text-decoration:none;color:inherit}
+.noema-qcourse{display:block;font-weight:500}
+.noema-tags{gap:var(--s1)}
+.noema .card.noema-subj{transition:transform var(--t1) var(--ease-soft)}
+.noema .card.noema-subj:hover{transform:translateY(-1px)}

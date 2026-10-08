@@ -62,8 +62,9 @@ export async function method({ id }) {
   const ws = forItem(it.id);
   return h('article.stack-lg',
     h('div', header(s.title, it.title, null, s.kind === 'techniques' ? '#/learn/methods' : `#/learn/guide/${s.id}`),
-      (timeBadge(it) || ws) ? h('div.row', { style: { marginTop: '12px' } }, timeBadge(it),
-        ws ? h('a.btn.soft.small', { href: `#/ws/${ws.id}` }, ws.emoji, ' ', t('learn.openWorkspace')) : null) : null),
+      (timeBadge(it) || ws || ['techniques', 'notes', 'memory'].includes(s.kind)) ? h('div.row', { style: { marginTop: '12px' } }, timeBadge(it),
+        ws ? h('a.btn.soft.small', { href: `#/ws/${ws.id}` }, ws.emoji, ' ', t('learn.openWorkspace')) : null,
+        ['techniques', 'notes', 'memory'].includes(s.kind) ? h('a.btn.ghost.small', { href: `#/grow/lab/new/${it.id}` }, '🧪 ', t('grow.lab.start')) : null) : null),
     hasParts
       ? h('div.stack-lg',
           it.leadHtml ? h('div.prose.lede', { html: it.leadHtml }) : null,

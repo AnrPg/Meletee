@@ -5,6 +5,7 @@ import * as study from '../core/study.js';
 import { iso, nice, diffDays, relative } from '../core/dates.js';
 import { askText, confirmSheet } from '../ui/forms.js';
 import { icon } from '../ui/art.js';
+import { courseCard, topicLinks } from '../noema/views.js';
 
 const back = (href, label) => h('a.btn.ghost.small', { href, style: { marginLeft: '-12px', alignSelf: 'flex-start' } }, icon('back'), label);
 
@@ -30,7 +31,9 @@ export function courses() {
             h('p.muted.small', { style: { margin: '8px 0 0' } }, t('courses.progress', { a: studied, b: c.topics.length })));
         }))
       : h('div.empty', h('p', '📚'), h('p.muted', t('courses.empty'))),
-    h('button.btn', { onclick: add, style: { alignSelf: 'center' } }, t('courses.add')));
+    h('div.noema-addrow',
+      h('button.btn', { onclick: add }, t('courses.add')),
+      h('a.btn.ghost.small', { href: '#/noema' }, '🦉 ', t('noema.importButton'))));
 }
 
 export function course({ id }) {
@@ -59,6 +62,9 @@ export function course({ id }) {
             c.examDate = d; save(); draw();
           } }, c.examDate ? t('common.change') : t('common.set'))),
         pace && pace.days > 0 ? h('p.muted.small', { style: { margin: '8px 0 0' } }, tn('courses.pace', pace.perWeek, { left: pace.left })) : null),
+
+      // linked noema-lite subject: what next and deep links
+      courseCard(c),
 
       // source map
       h('section.stack',
@@ -131,6 +137,7 @@ function topicSheet(c, tp, redraw) {
       tp.studiedAt
         ? h('p.muted.small', next ? t('reviews.nextOn', { date: nice(next, { weekday: 'long', day: 'numeric', month: 'short' }) }) : t('reviews.finished'))
         : h('button.btn.small', { onclick: () => { set((x) => study.markStudied(x)); toast(t('reviews.scheduled')); draw(); } }, t('reviews.studiedToday')),
+      topicLinks(tp),
       h('div.row', { style: { justifyContent: 'space-between' } },
         h('button.btn.ghost.small', { style: { color: 'var(--bad)' }, onclick: () => {
           const list = study.courses(); const cc = list.find((x) => x.id === c.id);

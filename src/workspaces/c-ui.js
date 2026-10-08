@@ -41,7 +41,7 @@ export async function confirmDelete(title) {
   return confirmSheet({ title, ok: t('common.delete'), danger: true });
 }
 
-// Where a tutor button will go once api.ai exists (phase 4). Renders nothing without it.
+// The tutor button (src/ai maps the task name to a tutor). Renders nothing without api.ai.
 export function aiSlot(api, task, context) {
   if (!api.ai || typeof api.ai.button !== 'function') return null;
   return api.ai.button(task, context);

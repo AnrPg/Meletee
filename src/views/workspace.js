@@ -5,6 +5,7 @@ import { index } from '../core/content.js';
 import { WORKSPACES, byId } from '../workspaces/registry.js';
 import { makeApi } from '../workspaces/api.js';
 import { icon } from '../ui/art.js';
+import { hasAI } from '../ai/index.js';
 
 async function titleOf(ws) {
   const idx = await index();
@@ -21,6 +22,7 @@ export async function workspaces() {
   return h('div.stack-lg',
     h('a.btn.ghost.small', { href: '#/do', style: { marginLeft: '-12px', alignSelf: 'flex-start' } }, icon('back'), t('nav.do')),
     h('div', h('h1', t('ws.title')), h('p.lede', { style: { marginTop: '8px' } }, t('ws.lede'))),
+    hasAI() ? null : h('a.ai-key-hint', { href: '#/settings' }, t('ai.keyHint')),
     h('div.cards.two', WORKSPACES.map((ws) => h('a.card.row-card', { href: `#/ws/${ws.id}` },
       h('span', ws.emoji), h('div', { style: { minWidth: '0' } }, h('h3', title(ws)), h('p.muted.small', t(`ws.${ws.id}.hint`)))))));
 }

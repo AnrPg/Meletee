@@ -1,1 +1,75 @@
-/* ai */
+/* AI tutors (src/ai): quiet buttons, inline results and the tutor sheet. Tokens only. */
+.ai-inline{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s2)}
+.ai-inline:empty{display:none}
+.ai-btn{color:var(--c)}
+.ai-btn[aria-busy="true"]{opacity:.7}
+.ai-out:empty{display:none}
+.ai-out{width:100%}
+.ai-badge{display:inline-flex;align-items:center;gap:2px;padding:1px 8px;border-radius:var(--r-pill);font-size:11.5px;font-weight:700;
+  color:var(--ink3);background:var(--bg2);white-space:nowrap;vertical-align:middle}
+.ai-note{color:var(--ink2);font-size:14px;margin:0}
+.ai-hint{margin:0;padding:var(--s3) var(--s4);border-radius:var(--r-sm);background:var(--warn-bg);font-size:15px;overflow-wrap:anywhere}
+.ai-hint+.ai-hint{margin-top:var(--s2)}
+
+/* result cards */
+.ai-card{width:100%;padding:var(--s4);border-radius:var(--r-sm);background:var(--c-bg);border:1px solid color-mix(in srgb,var(--c) 18%,transparent);
+  animation:aiIn var(--t2) var(--ease-soft) both;overflow-wrap:anywhere}
+.ai-card>*+*{margin-top:var(--s3)}
+.ai-card p{margin:0}
+.ai-card-head{gap:var(--s2);justify-content:space-between}
+.ai-score{font-weight:800;font-size:22px;color:var(--ink)}
+.ai-score small{font-size:13px;font-weight:650;color:var(--ink3);margin-left:1px}
+.ai-verdict{flex:1;min-width:0}
+.ai-points{margin:0;padding:0;list-style:none;font-size:14.5px}
+.ai-points li{margin:4px 0}
+.ai-feedback{font-size:15px;color:var(--ink2)}
+.ai-feedback p{margin:0 0 var(--s2)}
+.ai-groups{margin:0;padding:0;list-style:none}
+.ai-groups li{padding:var(--s3) 0;border-top:1px solid color-mix(in srgb,var(--c) 15%,transparent)}
+.ai-groups li p{margin:2px 0}
+.ai-qlist{margin:0;padding:0;list-style:none}
+.ai-qlist li{padding:var(--s2) 0}
+.ai-qlist label{align-items:flex-start;overflow-wrap:anywhere}
+@keyframes aiIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* the tutor sheet */
+.ai-sheet{min-width:0}
+.ai-head{justify-content:space-between;gap:var(--s2)}
+.ai-head h2{margin:0;min-width:0;flex:1}
+.ai-msgs{display:flex;flex-direction:column;gap:var(--s3);max-height:min(52vh,460px);overflow-y:auto;padding:2px}
+.ai-msg{max-width:92%;padding:var(--s3) var(--s4);border-radius:var(--r-sm);font-size:15.5px;line-height:1.55;overflow-wrap:anywhere}
+.ai-msg p{margin:0 0 var(--s2)}
+.ai-msg p:last-child{margin-bottom:0}
+.ai-msg ul,.ai-msg ol{margin:0 0 var(--s2);padding-left:1.2em}
+.ai-msg.ai{align-self:flex-start;background:var(--bg2);color:var(--ink)}
+.ai-msg.me{align-self:flex-end;background:var(--c-bg);color:var(--ink)}
+.ai-msg.note{background:transparent;border:1px dashed var(--line);color:var(--ink2)}
+.ai-typing{display:inline-flex;gap:4px;padding:4px 0}
+.ai-typing i{width:6px;height:6px;border-radius:50%;background:var(--ink3);animation:aiDot 1.2s infinite ease-in-out}
+.ai-typing i:nth-child(2){animation-delay:.15s}.ai-typing i:nth-child(3){animation-delay:.3s}
+@keyframes aiDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.ai-composer{display:flex;flex-direction:column;gap:var(--s2)}
+.ai-input{min-height:52px}
+.ai-actions{justify-content:flex-end}
+.ai-extras{gap:var(--s2)}
+.ai-quiz{padding-left:1.2em}
+.ai-quiz li{margin:var(--s2) 0}
+.ai-quiz summary{cursor:pointer;color:var(--c);font-weight:650;font-size:14px}
+.ai-foot{margin:0;font-size:12.5px}
+
+/* settings */
+.ai-provider{padding:var(--s4) var(--s5)}
+.ai-provider>summary{cursor:pointer;list-style:none;gap:var(--s2)}
+.ai-provider>summary::-webkit-details-marker{display:none}
+.ai-provider[open]>summary{margin-bottom:var(--s4)}
+.ai-role{flex:1;min-width:8rem}
+.ai-state{margin-left:auto}
+.ai-more summary{cursor:pointer;color:var(--ink2);font-weight:650;font-size:14px}
+.ai-more[open] summary{margin-bottom:var(--s3)}
+.ai-device{margin:0}
+.ai-key-hint{font-size:14px;color:var(--ink2)}
+@media (prefers-reduced-motion:reduce){.ai-card,.ai-typing i{animation:none}}
+.ai-settings .check input:checked+span,.ai-qlist .check input:checked+span{color:var(--ink);text-decoration:none}
+.ai-settings .check input,.ai-qlist .check input{accent-color:var(--c)}
+.ai-settings h2{margin-bottom:var(--s2)}
+@media (max-width:479px){.ai-role{display:none}}

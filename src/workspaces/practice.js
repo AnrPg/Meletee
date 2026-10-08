@@ -124,6 +124,7 @@ export default async function mount(root, api) {
       !all.length ? empty('🔍', T('errorsEmpty')) : [
         br.rows.length ? h('section.stack',
           h('div', h('h2', T('breakdown')), top ? h('p.muted.small', `${CAUSE_EMOJI[top.cause]} `, T(`insight.${top.cause}`)) : null),
+          aiSlot(api, 'practice.errors', () => ({ errors: errors() })),
           h('div.ws-practice-causes', br.rows.map((r) => h('button.ws-practice-cause', {
             type: 'button', 'aria-pressed': String(filter === r.cause),
             onclick: () => { filter = filter === r.cause ? null : r.cause; draw(); },

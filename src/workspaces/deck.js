@@ -136,7 +136,7 @@ export function flipCard({ card, api, step, total, typed = true, confidence = fa
       h('p.ws-flip-q', card.q), beforeEl,
       mine ? h('div.ws-flip-mine', h('p.eyebrow', t('ws.deck.yourAnswer')), h('p', mine)) : null,
       h('div.ws-flip-a', h('p.eyebrow', t('ws.deck.answer')), h('p', card.a)),
-      aiSlot(api, card, mine),
+      aiSlot(api, 'grade', card, mine),
       h('p.muted.small', t('ws.deck.howDid')),
       h('div.row.ws-flip-grades', grades.map((g) => h(g === 'got' ? 'button.btn.small' : 'button.btn.soft.small', {
         type: 'button', onclick: () => onGrade(g, { sure, typed: mine || '' }),
@@ -145,7 +145,7 @@ export function flipCard({ card, api, step, total, typed = true, confidence = fa
   };
 
   const revealBtn = h('button.btn', { type: 'button', onclick: reveal }, t('ws.deck.reveal'));
-  const show = () => fill(meta, bar, h('p.ws-flip-q', card.q), beforeEl, typedBox, sureSeg, h('div.row', revealBtn));
+  const show = () => fill(meta, bar, h('p.ws-flip-q', card.q), beforeEl, typedBox, sureSeg, aiSlot(api, 'hint', card, () => typedBox?.value || ''), h('div.row', revealBtn));
   if (before) {
     // before(next) builds its own step; it calls next() when the learner may go on.
     beforeEl = before(() => { show(); revealBtn.focus(); });
@@ -154,9 +154,11 @@ export function flipCard({ card, api, step, total, typed = true, confidence = fa
   return root;
 }
 
-// Hook point for phase 4: when api.ai exists, a "check my answer with the tutor"
-// button can be returned here. Nothing is rendered while api.ai is null.
-function aiSlot(api /* , card, mine */) {
+// The AI hook (src/ai): before the reveal a hint ladder (never the answer), after it the
+// answer checker when something was typed. Nothing is rendered while api.ai is null.
+function aiSlot(api, task, card, mine) {
   if (!api.ai) return null;
-  return null;
+  if (task === 'hint') return api.ai.button('hint', () => ({ question: card.q, attempt: typeof mine === 'function' ? mine() : '' }));
+  if (!mine) return null;
+  return api.ai.button('grade', { question: card.q, answer: mine, reference: card.a });
 }

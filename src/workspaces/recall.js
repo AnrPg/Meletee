@@ -4,7 +4,7 @@
 import { h, toast } from '../core/dom.js';
 import { tn } from '../core/i18n.js';
 import * as deck from './deck.js';
-import { record, shuffle, summary, inTopic } from './deck-core.js';
+import { record, shuffle, summary, inTopic, newCard } from './deck-core.js';
 
 const ROUND = 10;
 
@@ -29,7 +29,11 @@ export default async function mount(root, api) {
     return h('div.stack.ws-recall',
       h('div.row',
         h('button.btn', { type: 'button', onclick: async () => { if (await deck.editCard(api)) { toast(t('added')); draw(); } } }, t('add')),
-        h('button.btn.ghost.small', { type: 'button', onclick: async () => { const n = await deck.importCards(api); if (n) { toast(tn('ws.recall.imported', n)); draw(); } } }, t('import'))),
+        h('button.btn.ghost.small', { type: 'button', onclick: async () => { const n = await deck.importCards(api); if (n) { toast(tn('ws.recall.imported', n)); draw(); } } }, t('import')),
+        api.ai ? api.ai.button('questions', {}, { onAdd: (list) => {
+          deck.addCards(list.map((x) => newCard({ q: x.q, a: x.a, topic: api.data('lastTopic', null) })));
+          toast(tn('ws.recall.imported', list.length)); draw();
+        } }) : null),
       all.length ? h('p.muted.small', deck.countLabel(all.length)) : null,
       deck.deckList(api, draw),
       h('p.muted.small.ws-recall-tip', t('tip')));

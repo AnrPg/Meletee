@@ -31,10 +31,11 @@ export function liveClock({ startedAt, seconds = null, onEnd, cls = 'ws-b-clock'
   return el;
 }
 
-// The single place a future tutor button goes. Renders nothing while api.ai is null.
+// The single tutor button of a workspace (src/ai picks the tutor for api.id). Renders
+// nothing while api.ai is null.
 export function aiSlot(api, label, getContext) {
   if (!api.ai) return null;
-  return h('button.btn.ghost.small', { type: 'button', onclick: () => api.ai.open?.({ workspace: api.id, ...getContext() }) }, '✨ ', label);
+  return api.ai.button(null, getContext, { label });
 }
 
 // A labelled field: <label class="field-row">Label <input|textarea></label>
