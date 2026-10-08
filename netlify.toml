@@ -1,0 +1,11 @@
+[build]
+  command = "node tools/build.mjs"
+  publish = "dist/site"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"

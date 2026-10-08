@@ -1,0 +1,19 @@
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;overflow-x:hidden}
+button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;border:none;background:none;padding:0}
+input,textarea,select{font-family:inherit;font-size:inherit;color:var(--ink)}
+a{color:var(--c);text-decoration-thickness:1px;text-underline-offset:2px}
+h1,h2,h3{line-height:1.2;letter-spacing:-.02em;margin:0}
+h1{font-size:clamp(26px,5vw,34px);font-weight:800}
+h2{font-size:22px;font-weight:750}
+h3{font-size:17px;font-weight:700}
+p{margin:0 0 var(--s3)}
+strong{font-weight:750}
+code{font-family:var(--mono);font-size:.86em;background:var(--bg2);border:1px solid var(--line);padding:.05em .38em;border-radius:6px}
+::selection{background:color-mix(in srgb,var(--c) 30%,transparent)}
+:focus-visible{outline:2px solid var(--c);outline-offset:3px;border-radius:8px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none!important}

@@ -1,0 +1,38 @@
+/* Design tokens. Colours, radii and fonts follow noema-lite (engine/src/10_base.css)
+   so both apps feel like one family. */
+:root{
+  --bg:#fbf9f4; --bg2:#f3f0e8; --card:#ffffff; --ink:#1f2330; --ink2:#5b6172; --ink3:#9096a6;
+  --line:#ebe7dd; --shadow:0 1px 2px rgba(31,35,48,.05),0 8px 24px -12px rgba(31,35,48,.18);
+  --ok:#12a37a; --ok-bg:#e3f7ef; --bad:#e5484d; --bad-bg:#fde8e8; --warn:#f2a20c; --warn-bg:#fff4dc;
+  --info:#3b82f6; --info-bg:#e8f0fe; --violet:#7c5cff; --violet-bg:#efebff;
+  --c:#7c5cff; --c-bg:#efebff;
+  /* melete extras: a leaf green for growth and a soft peach for warmth */
+  --leaf:#3fae6a; --leaf-bg:#e6f6ec; --peach:#ff9f7a; --peach-bg:#fff0e9;
+  --r:18px; --r-sm:12px; --r-pill:999px;
+  --font:'Plus Jakarta Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:72px;
+  --measure:40rem;
+  --ease:cubic-bezier(.2,.9,.3,1.2); --ease-soft:cubic-bezier(.4,0,.2,1);
+  --t1:.15s; --t2:.3s; --t3:.6s;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#14161d; --bg2:#1b1e27; --card:#1f232e; --ink:#eef0f6; --ink2:#a9afc0; --ink3:#6f7689;
+  --line:#2c3140; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  --ok-bg:#103a2f; --bad-bg:#43191c; --warn-bg:#3d2f10; --info-bg:#172a4a; --violet-bg:#2a2350; --c-bg:#2a2350;
+  --leaf-bg:#14331f; --peach-bg:#3a2219;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14161d; --bg2:#1b1e27; --card:#1f232e; --ink:#eef0f6; --ink2:#a9afc0; --ink3:#6f7689;
+    --line:#2c3140; --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+    --ok-bg:#103a2f; --bad-bg:#43191c; --warn-bg:#3d2f10; --info-bg:#172a4a; --violet-bg:#2a2350; --c-bg:#2a2350;
+    --leaf-bg:#14331f; --peach-bg:#3a2219;
+    color-scheme:dark;
+  }
+}
+@media (prefers-reduced-motion: reduce){
+  :root{ --t1:0s; --t2:0s; --t3:0s; }
+}

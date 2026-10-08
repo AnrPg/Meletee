@@ -1,0 +1,10 @@
+{
+  "name": "Melete",
+  "short_name": "Melete",
+  "description": "A calm, playful companion for studying well.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fbf9f4",
+  "theme_color": "#7c5cff",
+  "icons": [{ "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

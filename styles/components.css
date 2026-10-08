@@ -1,0 +1,116 @@
+/* ---------- layout ---------- */
+.app{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:var(--s2);padding:var(--s4) var(--s4) 0;max-width:calc(var(--measure) + 2*var(--s4));width:100%;margin:0 auto}
+.brand{display:flex;align-items:center;gap:var(--s2);font-weight:800;letter-spacing:-.02em;font-size:17px;text-decoration:none;color:var(--ink)}
+.brand svg{width:30px;height:30px}
+.topbar .spacer{flex:1}
+.icon-btn{width:40px;height:40px;border-radius:var(--r-pill);display:grid;place-items:center;color:var(--ink2);transition:background var(--t1)}
+.icon-btn:hover{background:var(--bg2);color:var(--ink)}
+.icon-btn svg{width:20px;height:20px}
+main{flex:1;width:100%;max-width:calc(var(--measure) + 2*var(--s4));margin:0 auto;padding:var(--s5) var(--s4) calc(var(--s8) + var(--s6))}
+.view{animation:viewIn var(--t2) var(--ease-soft) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- bottom navigation: one quiet floating pill ---------- */
+.nav{position:fixed;left:50%;bottom:max(var(--s4),env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;
+  display:flex;gap:2px;padding:6px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--card) 88%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow);border:1px solid var(--line)}
+.nav a{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:64px;padding:6px 10px;border-radius:var(--r-pill);
+  font-size:11.5px;font-weight:650;color:var(--ink3);text-decoration:none;transition:color var(--t1),background var(--t1)}
+.nav a svg{width:22px;height:22px}
+.nav a[aria-current="page"]{color:var(--c);background:var(--c-bg)}
+.nav a:hover{color:var(--ink)}
+
+/* ---------- headings & text ---------- */
+.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:var(--s2)}
+.lede{font-size:17px;color:var(--ink2);max-width:34rem}
+.muted{color:var(--ink2)}
+.small{font-size:14px}
+.stack>*+*{margin-top:var(--s4)}
+.stack-lg>*+*{margin-top:var(--s6)}
+.row{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap}
+
+/* ---------- hero (home) ---------- */
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:var(--s6) 0 var(--s5)}
+.hero .companion{width:132px;height:132px;margin-bottom:var(--s4)}
+.hero h1{margin-bottom:var(--s2)}
+.hero .lede{margin:0 auto var(--s5)}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);min-height:48px;padding:0 var(--s5);border-radius:var(--r-pill);
+  font-weight:700;background:var(--c);color:#fff;box-shadow:0 6px 18px -8px color-mix(in srgb,var(--c) 70%,transparent);
+  transition:transform var(--t1) var(--ease),box-shadow var(--t1);text-decoration:none}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink2);box-shadow:none}
+.btn.ghost:hover{background:var(--bg2);color:var(--ink)}
+.btn.soft{background:var(--c-bg);color:var(--c);box-shadow:none}
+.btn.small{min-height:36px;padding:0 var(--s4);font-size:14px}
+.btn svg{width:18px;height:18px;flex:none}
+
+/* ---------- cards ---------- */
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:var(--s5);box-shadow:var(--shadow);color:inherit;text-decoration:none}
+a.card,button.card{width:100%;text-align:left;transition:transform var(--t2) var(--ease),border-color var(--t1)}
+a.card:hover,button.card:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--c) 35%,var(--line))}
+.card h3{margin-bottom:var(--s1)}
+.card p:last-child{margin-bottom:0}
+.card .emoji{font-size:26px;line-height:1;margin-bottom:var(--s3);display:block}
+.cards{display:grid;gap:var(--s3)}
+@media (min-width:560px){.cards.two{grid-template-columns:1fr 1fr}}
+.card.soon{opacity:.75;box-shadow:none;background:transparent;border-style:dashed}
+
+/* ---------- chips & badges ---------- */
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 var(--s4);border-radius:var(--r-pill);border:1px solid var(--line);
+  background:var(--card);font-weight:650;font-size:14px;color:var(--ink2);transition:all var(--t1)}
+.chip[aria-pressed="true"]{background:var(--c-bg);border-color:transparent;color:var(--c)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:var(--r-pill);font-size:12.5px;font-weight:700;background:var(--bg2);color:var(--ink2)}
+.badge.time{background:var(--peach-bg);color:color-mix(in srgb,var(--peach) 60%,var(--ink))}
+.badge.leaf{background:var(--leaf-bg);color:var(--leaf)}
+
+/* ---------- prose (compendium html) ---------- */
+.prose{max-width:var(--measure)}
+.prose p{margin:0 0 var(--s3)}
+.prose ul,.prose ol{padding-left:1.3em;margin:0 0 var(--s3)}
+.prose li{margin:2px 0}
+.prose table{width:100%;border-collapse:collapse;font-size:14.5px;margin:var(--s3) 0;display:block;overflow-x:auto}
+.prose th,.prose td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.prose th{font-weight:700;color:var(--ink2)}
+.prose blockquote{margin:0 0 var(--s3);padding:var(--s3) var(--s4);border-radius:var(--r-sm);background:var(--bg2)}
+
+/* the subtle "Further reading" box */
+.reading{margin-top:var(--s5);padding:var(--s4);border-radius:var(--r-sm);background:var(--bg2);font-size:14px;color:var(--ink2)}
+.reading summary{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:6px}
+.reading summary::-webkit-details-marker{display:none}
+.reading ul{margin:var(--s3) 0 0;padding-left:1.1em}
+.reading li{margin:4px 0}
+
+/* ---------- sheet (bottom dialog) ---------- */
+.sheet-backdrop{position:fixed;inset:0;z-index:50;background:rgba(20,22,29,.32);display:flex;align-items:flex-end;justify-content:center;animation:fade var(--t2) both}
+.sheet{width:100%;max-width:32rem;background:var(--card);border-radius:var(--r) var(--r) 0 0;padding:var(--s5) var(--s5) calc(var(--s5) + env(safe-area-inset-bottom));
+  box-shadow:var(--shadow);animation:sheetIn var(--t2) var(--ease) both;max-height:85vh;overflow:auto}
+.sheet .grip{width:40px;height:4px;border-radius:4px;background:var(--line);margin:-8px auto var(--s4)}
+@media (min-width:640px){.sheet-backdrop{align-items:center}.sheet{border-radius:var(--r)}}
+@keyframes sheetIn{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:calc(var(--s8) + var(--s5));transform:translateX(-50%);z-index:60;padding:10px 18px;border-radius:var(--r-pill);
+  background:var(--ink);color:var(--bg);font-weight:650;font-size:14px;box-shadow:var(--shadow);animation:toastIn var(--t2) var(--ease) both}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ---------- settings list ---------- */
+.list{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.list>*{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3);padding:var(--s4) var(--s5);border-bottom:1px solid var(--line);width:100%;text-align:left}
+.list>*:last-child{border-bottom:none}
+.list .label{flex:1;font-weight:650}
+.seg{display:inline-flex;background:var(--bg2);border-radius:var(--r-pill);padding:3px}
+.seg button{padding:6px 12px;border-radius:var(--r-pill);font-size:14px;font-weight:650;color:var(--ink2)}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* ---------- companion animation ---------- */
+.companion .blink{animation:blink 5s infinite;transform-origin:center 46%;transform-box:fill-box}
+.companion .sprout{animation:sway 4s ease-in-out infinite;transform-origin:50% 100%;transform-box:fill-box}
+.companion .body{animation:breathe 4.5s ease-in-out infinite;transform-origin:50% 100%;transform-box:fill-box}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.025,.985)}}
