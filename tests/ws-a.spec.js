@@ -1,5 +1,5 @@
 // Group a workspaces: recall, srs, interleave, pretest, relearn.
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test.js';
 
 const DECK = 'meletee1:local:a:ws:deck:cards';
 const COURSES = [{ id: 'c1', name: 'Bio', examDate: null, sources: [], createdAt: '2026-09-01', topics: [

@@ -1,5 +1,5 @@
 // Workspaces, group b: blank-page recall, Feynman, teaching, self-explanation, dual coding.
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test.js';
 
 async function open(page, hash = '', lang = 'en') {
   await page.addInitScript((l) => { if (!localStorage.getItem('meletee1:local:a:settings')) localStorage.setItem('meletee1:local:a:settings', JSON.stringify({ lang: l })); }, lang);

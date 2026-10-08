@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test.js';
 
 const K = (name) => `meletee1:local:a:${name}`;
 
@@ -47,7 +47,13 @@ test('Grow shows the garden, a forgiving week of leaves and a short list of ways
 test('workspace saves anywhere in the app count as a study day', async ({ page }) => {
   const errors = await open(page, '#/grow');
   await expect(page.locator('.week-dots li[data-on="true"]')).toHaveCount(0);
-  await page.evaluate(async () => { const s = await import('/src/core/store.js'); s.set('ws:recall:deck', { cards: [] }); });
+  // the app attaches this listener in its background work (startBackground); make sure it is on before
+  // poking the store from outside, so this tests the logging and not the boot order (listen() is idempotent)
+  await page.evaluate(async () => {
+    (await import('/src/grow/data.js')).listen();
+    const s = await import('/src/core/store.js');
+    s.set('ws:recall:deck', { cards: [] });
+  });
   expect(await read(page, 'grow:days')).toEqual({ '2026-10-08': 1 });
   await page.reload();
   await expect(page.locator('.week-dots li[data-on="true"]')).toHaveCount(1);

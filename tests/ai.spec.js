@@ -1,5 +1,5 @@
 // AI tutors (phase 4). Both vendors are stubbed with page.route(): no real network, no real keys.
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test.js';
 
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 const GRADE = { score: 72, verdict: 'Mostly there', covered: ['makes ATP'], missing: ['happens in mitochondria'], mistakes: [], feedback: 'Good start. Where does it happen?' };

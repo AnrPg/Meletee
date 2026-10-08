@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test.js';
 
 const LANGS = {
   en: { learn: 'Learn', whatNow: 'What now?', methods: 'Method library' },

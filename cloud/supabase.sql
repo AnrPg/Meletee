@@ -8,7 +8,9 @@
 -- =====================================================================================
 
 -- 1) Key/value mirror of Meletee's per-account storage (meletee1:<account>:a:<name> → key 'a:<name>'):
---    courses, sessions, plans, settings … Last write wins per key, using updated_at (like noema_kv).
+--    courses, sessions, plans, settings … The newer copy wins per key, using updated_at (like noema_kv); a key
+--    changed on two devices before they synced is merged entry by entry by the app (src/cloud/sync.js merge3).
+--    A value over ~900 KB is stored in parts: 'a:<name>' holds a small header, 'a:<name>#1' … '#n' the text.
 --    Never synced: the device keys 'meletee-device:*' (AI keys), timers and caches.
 create table if not exists public.meletee_kv (
   user_id    uuid not null default auth.uid() references auth.users(id) on delete cascade,

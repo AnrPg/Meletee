@@ -7,11 +7,13 @@
 //   list({ includeDeleted: true }) -> []     (optional; first push after sign-in)
 //   put(record, { silent, keepUpdatedAt })   (optional; pulls Meletee records saved on other devices)
 import { backend } from './client.js';
+import { account } from '../core/store.js';
 
 export const CONVO_TABLE = 'noema_conversations';
-const PULLED = 'meletee1:cloud:convoPulledAt';
-const PUSHED = 'meletee1:cloud:convoPushed';   // { id: updatedAt } of what the cloud already has
-const pushedMap = () => { try { return JSON.parse(localStorage.getItem(PUSHED) || '{}'); } catch { return {}; } };
+// Per account (two accounts on one device each pull their own conversations from the start).
+const PULLED = () => `meletee1:${account()}:meta:convoPulledAt`;
+const PUSHED = () => `meletee1:${account()}:meta:convoPushed`;   // { id: updatedAt } of what the cloud already has
+const pushedMap = () => { try { return JSON.parse(localStorage.getItem(PUSHED()) || '{}'); } catch { return {}; } };
 
 // Row exactly as noema-lite builds it (engine/cloud.js, pushConvos).
 export function convoRow(r, uid) {
@@ -43,14 +45,14 @@ export async function pushConvos({ keepalive = false } = {}) {
   try {
     for (let i = 0; i < rows.length; i += 20) await b.upsert(CONVO_TABLE, rows.slice(i, i + 20), { onConflict: 'user_id,id', keepalive });
     const done = pushedMap(); for (const r of rows) done[r.id] = r.updated_at;
-    try { localStorage.setItem(PUSHED, JSON.stringify(done)); } catch { /* blocked */ }
+    try { localStorage.setItem(PUSHED(), JSON.stringify(done)); } catch { /* blocked */ }
     return rows.length;
   } catch (e) { ids.forEach((i) => pending.add(i)); throw e; }
 }
 
 export async function pullConvos() {
   const b = backend(); if (!mod?.put || !b?.session()) return 0;
-  let since = null; try { since = localStorage.getItem(PULLED); } catch { /* blocked */ }
+  let since = null; try { since = localStorage.getItem(PULLED()); } catch { /* blocked */ }
   const filters = [['record->meta->>app', 'eq', 'meletee']];
   if (since) filters.push(['synced_at', 'gt', since]);
   const rows = await b.select(CONVO_TABLE, { select: 'record,updated_at,synced_at', filters, order: 'synced_at.asc' });
@@ -61,8 +63,14 @@ export async function pullConvos() {
     if (!local || Date.parse(r.updatedAt) > Date.parse(local.updatedAt)) { await mod.put(r, { silent: true, keepUpdatedAt: true }); n++; }
     last = row.synced_at || row.updated_at || last;
   }
-  if (last) try { localStorage.setItem(PULLED, last); } catch { /* blocked */ }
+  if (last) try { localStorage.setItem(PULLED(), last); } catch { /* blocked */ }
   return n;
+}
+
+// Pull now (the first sync after signing in), loading the store when needed.
+export async function pullNow(loader) {
+  mod ||= await loadStore(loader);
+  return pullConvos();
 }
 
 export async function startConvoSync(loader) {

@@ -1,7 +1,7 @@
 // Phase 7 in the browser: Buddies with the fake Supabase backend (tests/fixtures/fake-supabase.js)
 // plus an in-page model of the buddy SQL functions (below), and a fake Realtime server through
 // page.routeWebSocket. Nothing touches the network.
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test.js';
 
 const FAKE = new URL('./fixtures/fake-supabase.js', import.meta.url).pathname;
 const ME = '11111111-2222-3333-4444-555555555555';

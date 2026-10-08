@@ -1,6 +1,6 @@
 // #/privacy: linked from Settings, translated, and its two ways out: delete Meletee's data from this
 // browser, and (signed in, with the fake Supabase) delete Meletee's rows in the cloud too.
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test.js';
 
 const FAKE = new URL('./fixtures/fake-supabase.js', import.meta.url).pathname;
 const UID = '11111111-2222-3333-4444-555555555555';
@@ -18,7 +18,7 @@ test('privacy page: linked from Settings, explains, and deletes this device’s 
   await page.goto('/#/settings');
   await page.getByRole('link', { name: /Privacy/ }).click();
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Your privacy');
-  for (const h of ['On this device', 'When you sign in', 'AI keys', 'What buddies see', 'noema-lite']) await expect(page.getByRole('heading', { name: h })).toBeVisible();
+  for (const h of ['On this device', 'In your account', 'AI keys', 'What buddies see', 'noema-lite']) await expect(page.getByRole('heading', { name: h })).toBeVisible();
   await expect(page.getByText('meletee_kv', { exact: false })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Delete here and in the cloud' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Delete from this device' }).click();

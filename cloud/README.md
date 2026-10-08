@@ -1,7 +1,10 @@
 # Cloud setup (one time, about 5 minutes)
 
 Meletee uses the **same Supabase project as noema-lite**, so one account works in both apps.
-Signing in is optional: signed out, Meletee keeps everything on the device.
+An account is required (`requireAccount: true` in `config.js`): signed out, Meletee shows only its welcome
+screen (create an account, or sign in with a noema-lite account) and the privacy page. Once signed in it
+works offline with the cached session and syncs when it is back online; only a refresh token the server
+rejects asks for a new sign-in, and the learner's data stays on the device meanwhile.
 
 ## 1. Create Meletee's tables
 
@@ -19,20 +22,51 @@ never changes noema-lite's `noema_*` tables. noema-lite's own `cloud/supabase.sq
 every table is protected by row-level security. Never put the secret key or the database password anywhere
 in this repository.
 
-Authentication settings are shared with noema-lite (Authentication → Sign In / Providers → Email). If
-"Confirm email" is on, new accounts confirm their e-mail before the first sign-in.
-Add Meletee's address to **Authentication → URL Configuration → Redirect URLs** so password-reset e-mails can
-link back to it.
+Authentication settings are shared with noema-lite:
+
+- **Authentication → Sign In / Providers → Email**: *Enable Email provider* and *Allow new users to sign up*
+  must be on (the welcome screen creates accounts). With **Confirm email** on, a new account confirms its
+  e-mail first: the welcome screen says so and signs in once the link is used; with it off, a new account
+  goes straight in. Either works; this is shared with noema-lite.
+- **Authentication → URL Configuration → Redirect URLs**: add `https://meletee.netlify.app/**` (and any other
+  address Meletee is served from, e.g. a Netlify preview pattern). Meletee asks for its own address in the
+  confirmation and password-reset e-mails; the welcome screen then signs in from the link and, after a reset,
+  asks for the new password. Without this entry Supabase sends people to the **Site URL** (noema-lite's),
+  which also works, since it is the same account.
+- **Authentication → Emails** (optional): the templates are shared with noema-lite, so keep their wording
+  app-neutral (e.g. "your noema-lite / Meletee account").
 
 ## What is stored where
 
 | Data | Where | Notes |
 |---|---|---|
-| Meletee's own data (courses, sessions, plans, settings…) | `meletee_kv`, one row per `a:<name>` key | last write wins per key, pushed ~3 s after a change, pulled on sign-in and when the tab gets focus |
+| Meletee's own data: every `a:<name>` key (list below) | `meletee_kv`, one row per key | pushed ~3 s after a change (at most 10 s), on hide and when back online; pulled on sign-in (before the app opens on a new device), on focus and when the tab is shown. A key changed on one device: the newer copy wins. Changed on two devices before they synced: merged entry by entry (by `id`, or by content for entries without one), so appended logs never lose entries. Values over ~900 KB go up in parts (`a:<name>#1…n`). |
 | Daily and manual restore points | `meletee_snapshots` | the newest 30 daily ones are kept, at most 20 manual ones, ≤ 5 MB each and 50 MB in all per person (enforced by the database); restore in Settings → Cloud sync → Restore points |
 | AI conversations (`meta.app = 'meletee'`) | noema-lite's `noema_conversations` | same row shape as noema-lite, so they appear there too |
 | AI keys | only this browser (`meletee-device:*` keys) | never synced, never in restore points |
+| Running focus timer (`a:timer`), caches (`cache:noema` subject list, `a:cache.*`), sync bookkeeping (`meta:*`), the session (`meletee1:cloud:session`) | only this browser | device-only by design: a timer runs on one device (the finished session is synced), the rest can be rebuilt |
+| Results waiting for noema-lite's inbox (`cache:noemaOutbox`) | only this browser until delivered | a delivery queue; what was studied is also in the synced courses |
 | noema-lite progress | read from `noema_kv` (`s:*:state`, `a:packmeta:*`, `a:subjoverride:*`, `a:caps`) | never `a:settings`; never written, except new inbox rows (docs/NOEMA.md) |
+
+### What syncs
+
+Everything that is the learner's progress, logs or history (all under `meletee1:u_<user id>:a:`):
+
+- courses and topics with their review stages (`courses`), focus sessions (`sessions`), recall prompts
+  (`recalls`), today's top three (`today`), the week plan (`blocks`), the parking lot (`parking`), the method
+  found (`method`), profile, settings and UI choices (`profile`, `settings`, `ui`, `ai` without keys);
+- every workspace's data (`ws:<workspace>:<key>`): cards and their schedule, error logs, notes, Feynman
+  versions, sketches (as strokes) and the rest;
+- Grow: Method Lab experiments and ratings (`grow:lab`), done list and wins (`grow:wins`), reflections
+  (`grow:reflect`), "my why" (`grow:why`), calm-corner counts (`grow:calm`), the activity log by day
+  (`grow:days`), the garden (`grow:garden`), and the minutes already sent to buddies (`buddies:logged`);
+- AI conversations (IndexedDB `meletee-convos`) → `noema_conversations`, per conversation (newer copy wins).
+
+Buddies' cards, invites, goals and contributions live in the `meletee_buddy_*` tables already.
+
+Study kept on a device before accounts (the `local` profile) moves into the account at the first sign-in
+and is merged with what the account already has; then the local copy is removed (only the language and
+theme stay, for the welcome screen). Another account's data is never copied.
 
 ## Buddies (phase 7)
 

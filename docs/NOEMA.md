@@ -5,17 +5,18 @@ debugging playbooks, pitfalls). This document says what the integration does tod
 from, and the small changes noema-lite needs so the two apps work as one. Each change is written so it can
 become its own small pull request on noema-lite.
 
-Code: `src/cloud/` (sign-in, sync, restore points, AI conversations) and `src/noema/` (adapters).
-Tests: `tests/cloud.test.mjs`, `tests/cloud.spec.js` (a fake Supabase in `tests/fixtures/fake-supabase.js`
+Code: `src/cloud/` (account gate, sign-in, sync, restore points, AI conversations), `src/views/welcome.js` (the
+welcome screen) and `src/noema/` (adapters).
+Tests: `tests/cloud.test.mjs`, `tests/cloud.spec.js`, `tests/account.spec.js` (a fake Supabase in `tests/fixtures/fake-supabase.js`
 and a trimmed real pack in `tests/fixtures/noema-pack.json`; nothing touches the real project).
 
 ## 1. What Meletee does
 
 | Feature | Where | How |
 |---|---|---|
-| One account for both apps | Settings → Cloud sync | E-mail + password against the same Supabase project (`window.MELETEE_CONFIG`). No supabase-js: plain `fetch` to Auth, PostgREST and Storage, exactly like noema-lite's `engine/cloud.js`. The session lives in `meletee1:cloud:session`. |
-| Sync of Meletee's own data | `src/cloud/sync.js` | Every `meletee1:<acc>:a:<name>` key ↔ row `a:<name>` in `meletee_kv`. Last write wins per key (`updated_at`, local mtimes in `meta:mtime`). Push 3 s after a change (at most 10 s), on hide (keepalive) and when back online; pull on sign-in and on focus. Signing in moves the app to the account `u_<user id>` (like noema-lite); the first time, this device's data comes along and cloud copies win where both exist. |
-| Never synced | `syncable()` in `src/cloud/sync.js` | Anything outside `meletee1:<acc>:a:` (so every `meletee-device:*` key, i.e. the AI keys), the running timer (`a:timer`) and `a:cache.*`. |
+| One account for both apps | The welcome screen (required, `src/views/welcome.js`); Settings → Cloud sync | Create an account or sign in with the noema-lite account: e-mail + password against the same Supabase project (`window.MELETEE_CONFIG`). No supabase-js: plain `fetch` to Auth, PostgREST and Storage, exactly like noema-lite's `engine/cloud.js`. The session lives in `meletee1:cloud:session`; confirmation and reset e-mails link back to Meletee (`redirect_to`), which signs in from the link. Offline, an expired session is kept; only a refresh token the server rejects signs out. |
+| Sync of Meletee's own data | `src/cloud/sync.js` | Every `meletee1:<acc>:a:<name>` key ↔ row `a:<name>` in `meletee_kv`. Per key: changed on one device → the newer copy wins (`updated_at`, local mtimes in `meta:mtime`); changed on two devices before they synced (`meta:pending` + the last synced copy's entry hashes in `meta:base`) → merged entry by entry (`merge3`). Values over ~900 KB go up in parts. Push 3 s after a change (at most 10 s), on hide (keepalive) and when back online; pull on sign-in (before the app opens on a new device: "bringing your study over…"), on focus and when the tab is shown. An account is required (`requireAccount`); signing in moves the app to the account `u_<user id>` (like noema-lite), and study kept in the `local` profile from before accounts moves in and is merged with it. |
+| Never synced | `syncable()` in `src/cloud/sync.js` | Anything outside `meletee1:<acc>:a:` (so every `meletee-device:*` key, i.e. the AI keys; `meta:*` sync bookkeeping; `cache:*` such as the noema-lite subject list and the results outbox), the running timer (`a:timer`) and `a:cache.*`. The full list is in cloud/README.md. |
 | Restore points | Settings → Cloud sync → Restore points | One automatic per day (newest 30 kept) + manual ones in `meletee_snapshots`. Restoring first saves today's data as a restore point. |
 | AI conversations | `src/cloud/convos.js` | Records with `meta.app = 'meletee'` are upserted into noema-lite's `noema_conversations` with noema-lite's exact row shape, so they appear in noema-lite. |
 | noema-lite subjects | `#/noema` | Library subjects + your imported subjects + anything with progress, with your own names. |

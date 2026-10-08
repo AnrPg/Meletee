@@ -1,6 +1,7 @@
 // The single-file build (tools/build-single.mjs): dist/meletee.html opened from disk (file://),
-// with no server and no network. Learn content, languages, the timer and a workspace all work offline.
-import { test, expect } from '@playwright/test';
+// with no server and no network. Learn content, languages, the timer and a workspace all work offline
+// (with requireAccount off, tests/fixtures/test.js); by default the file asks for an account first.
+import { test, expect } from './fixtures/test.js';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { join, dirname } from 'node:path';
@@ -46,4 +47,25 @@ test('dist/meletee.html works from file:// without any network', async ({ page }
 
   expect(errors).toEqual([]);
   expect(net.filter((u) => !/fonts\.(googleapis|gstatic)\.com/.test(u))).toEqual([]);
+});
+
+test.describe('with the default configuration', () => {
+  test.use({ requireAccount: true });
+  test('dist/meletee.html asks for an account first (the welcome screen works offline too)', async ({ page }) => {
+    const net = [];
+    await page.route(/^https?:/, (r) => { net.push(r.request().url()); return r.abort(); });
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.goto(FILE + '#/do');
+    await expect(page.getByRole('heading', { name: 'Welcome to Meletee' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in with your noema-lite account' })).toBeVisible();
+    await expect(page.locator('#top3-input')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Sign in with your noema-lite account' }).click();
+    await page.getByLabel('E-mail').fill('ada@example.com');
+    await page.getByLabel(/^Password/).fill('correct-horse');
+    await page.locator('form.welcome-form button[type=submit]').click();
+    await expect(page.locator('.welcome-msg')).toContainText('offline');     // no network here: a kind word, no crash
+    expect(errors).toEqual([]);
+    expect(net.filter((u) => !/fonts\.(googleapis|gstatic)\.com|supabase\.co/.test(u))).toEqual([]);
+  });
 });

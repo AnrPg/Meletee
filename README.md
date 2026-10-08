@@ -25,7 +25,7 @@ Plain ES modules and CSS: no framework, no bundler and no runtime dependencies. 
 
 **Buddies** (with an account): invite codes, cheers and nudges, a shared focus room with a synced timer, shared and team goals and opt-in weekly challenges. Each person chooses exactly what buddies see.
 
-**Cloud and noema-lite** (optional): one account for both apps, sync of Meletee's data with daily restore points, AI conversations shared with noema-lite, noema-lite subjects imported as courses with deep links, and "what next" from your noema-lite progress.
+**Your account and noema-lite**: Meletee asks for an account first (create one, or sign in with your noema-lite account: one account works in both apps). Everything you do is synced, so progress, logs and history are never lost and come back on any device you sign in from: courses, focus sessions, reviews, plans, workspaces, Grow and AI conversations, with daily restore points. Changes made on two devices before they synced are merged entry by entry. Offline, the app keeps working with the cached session and syncs when it is back online. Plus noema-lite subjects imported as courses with deep links, and "what next" from your noema-lite progress.
 
 **Everywhere**: works offline once installed (service worker), installable as an app, a single-file build, keyboard and screen-reader friendly, light and dark themes, reduced motion respected. What stays on the device and what syncs is explained in the app at `#/privacy` (Settings → Privacy).
 
@@ -46,7 +46,7 @@ node --test tests/*.test.mjs   # unit tests only
 npx playwright test tests/a11y.spec.js   # one spec (axe on every screen, light and dark, two languages)
 ```
 
-Tests never use the network: Supabase is replaced by `tests/fixtures/fake-supabase.js`, noema-lite and the AI providers by `page.route()`.
+Tests never use the network: Supabase is replaced by `tests/fixtures/fake-supabase.js`, noema-lite and the AI providers by `page.route()`. Specs import `test` from `tests/fixtures/test.js`, which turns `requireAccount` off so they can test the app itself; `tests/account.spec.js` and one check in `tests/single.spec.js` test the account gate with it on.
 
 ## Build
 
@@ -57,12 +57,12 @@ npm run icons                  # re-render the PNG app icons from assets/icon.sv
 ```
 
 - **Static site.** `tools/build.mjs` builds the content, copies the app to `dist/site` and stamps the service worker with a version and the list of files to precache (the app shell: HTML, styles, every module, interface strings, icons). Compendium sections are cached as they are read. The worker is registered only over https.
-- **Single file.** `tools/build-single.mjs` inlines styles and `config.js`, turns every module into a `data:` URL in an import map (relative imports rewritten, no bundler) and carries the strings and content of all four languages. Everything local works offline; the cloud, buddies, noema-lite and the AI tutors need a connection.
-- **First load.** Only the home screen's modules load at start; every other area (Learn, Do, workspaces, Grow, Buddies, Settings, noema-lite, the AI tutors) is a dynamic import fetched when first opened. Cloud sync and the buddies' live status load only with an account.
+- **Single file.** `tools/build-single.mjs` inlines styles and `config.js`, turns every module into a `data:` URL in an import map (relative imports rewritten, no bundler) and carries the strings and content of all four languages. It asks for an account like the site; once signed in, everything local works offline, and the cloud, buddies, noema-lite and the AI tutors need a connection.
+- **First load.** Only the home screen's modules (and the small account gate, `src/cloud/gate.js`) load at start; the welcome screen loads only while nobody is signed in; every other area (Learn, Do, workspaces, Grow, Buddies, Settings, noema-lite, the AI tutors) is a dynamic import fetched when first opened. Cloud sync and the buddies' live status load only with an account.
 
 ## Cloud setup
 
-Meletee uses the same Supabase project as noema-lite, so one account works in both. Signing in is optional. To set it up, run `cloud/supabase.sql` once in the Supabase SQL editor and check `config.js`: step by step in [cloud/README.md](cloud/README.md). `config.js` holds only the project URL and the publishable key, which are public by design (every table has row-level security). Never put a secret key in this repository.
+Meletee uses the same Supabase project as noema-lite, so one account works in both, and an account is required to use the app (`requireAccount` in `config.js`, on by default). To set it up, run `cloud/supabase.sql` once in the Supabase SQL editor and check `config.js`: step by step in [cloud/README.md](cloud/README.md). `config.js` holds only the project URL and the publishable key, which are public by design (every table has row-level security). Never put a secret key in this repository.
 
 ## AI keys
 

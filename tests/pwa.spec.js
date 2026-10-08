@@ -1,7 +1,7 @@
 // Installable app: the manifest, its PNG icons and shortcuts, and the service worker's offline
 // behaviour. The app registers the worker only on https; here the test registers it by hand on
 // localhost (development sw.js has an empty precache list, so this checks the runtime caching).
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test.js';
 
 test('manifest: PNG icons (192, 512, maskable), colours and shortcuts', async ({ page, request }) => {
   const res = await request.get('/manifest.webmanifest');

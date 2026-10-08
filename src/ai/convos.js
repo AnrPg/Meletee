@@ -124,3 +124,13 @@ export async function remove(id) {
 }
 
 export function onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+
+// After the conversations of the 'local' profile moved into an account (cloud/settings.js afterSignIn),
+// their local copies are removed, so they can never be copied into another account on this device.
+export async function purgeAccount(acc) {
+  const prefix = `${acc}|`;
+  for (const k of [...memory.keys()]) if (k.startsWith(prefix)) memory.delete(k);
+  const d = await db();
+  if (!d) return;
+  await tx('readwrite', (s) => s.delete(IDBKeyRange.bound(prefix, prefix + '￿')));
+}

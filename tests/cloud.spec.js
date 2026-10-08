@@ -1,7 +1,7 @@
 // Phase 6 in the browser: sign-in with a fake Supabase backend, sync, restore points, the noema-lite
 // subject list, course import, deep links, "what next" and the write-back inbox. No real network:
 // Supabase is replaced by tests/fixtures/fake-supabase.js and noema-lite's site by page.route().
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test.js';
 import { readFileSync } from 'node:fs';
 
 const PACK = readFileSync(new URL('./fixtures/noema-pack.json', import.meta.url), 'utf8');
@@ -48,7 +48,7 @@ async function signIn(page) {
   await expect(page.locator('.cloud-email')).toHaveText('ada@example.com', { timeout: 15000 });
 }
 
-test('signed out: settings offers an optional sign-in and the app stays local', async ({ page }) => {
+test('with requireAccount off: settings offers a sign-in sheet and the app stays local', async ({ page }) => {
   const { errors, real } = await open(page, '#/settings');
   await expect(page.getByRole('heading', { name: /Cloud sync/ })).toBeVisible();
   await page.getByRole('button', { name: 'Sign in' }).click();

@@ -8,6 +8,7 @@ import { h, toast } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { icon } from '../ui/art.js';
 import { confirmSheet } from '../ui/forms.js';
+import { needsAccount } from '../cloud/gate.js';
 
 const part = (emoji, key) => h('section.card.soft-card.privacy-part',
   h('h2', h('span', { 'aria-hidden': 'true' }, emoji, ' '), t(`privacy.${key}.title`)),
@@ -51,7 +52,10 @@ export async function privacy() {
     wipeDevice(); done();
   };
   return h('div.stack-lg.privacy',
-    h('a.btn.ghost.small', { href: '#/settings', style: { marginLeft: '-12px', alignSelf: 'flex-start' } }, icon('back'), t('nav.settings')),
+    // from the welcome screen (no account yet) the way back is the welcome screen
+    needsAccount()
+      ? h('a.btn.ghost.small', { href: '#/', style: { marginLeft: '-12px', alignSelf: 'flex-start' } }, icon('back'), t('welcome.back'))
+      : h('a.btn.ghost.small', { href: '#/settings', style: { marginLeft: '-12px', alignSelf: 'flex-start' } }, icon('back'), t('nav.settings')),
     h('div', h('h1', '🔒 ', t('privacy.title')), h('p.lede', { style: { marginTop: '8px' } }, t('privacy.lede'))),
     part('📱', 'device'),
     part('☁️', 'cloud'),
@@ -62,7 +66,7 @@ export async function privacy() {
       h('h2', h('span', { 'aria-hidden': 'true' }, '🧺 '), t('privacy.data.title')),
       h('p.muted', t('privacy.data.text')),
       h('div.row',
-        h('a.btn.soft.small', { href: '#/settings' }, t('privacy.backup')),
+        needsAccount() ? null : h('a.btn.soft.small', { href: '#/settings' }, t('privacy.backup')),
         h('button.btn.ghost.small', { type: 'button', onclick: wipeHere }, t('privacy.wipe')),
         signedIn ? h('button.btn.ghost.small', { type: 'button', onclick: wipeAll }, t('privacy.wipeCloud')) : null)));
 }

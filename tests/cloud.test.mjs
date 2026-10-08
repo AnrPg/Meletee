@@ -94,7 +94,7 @@ test('merge: newer remote wins, newer local is pushed, local-only is pushed, rem
   assert.equal(r.mtimes['a:timer'], undefined);
 });
 
-test('merge: data copied in at first sign-in (no mtime) loses to the cloud copy', () => {
+test('merge: an unchanged local copy without a timestamp loses to the cloud copy', () => {
   const r = sync.mergeKv({ local: { 'a:settings': '{"lang":"el"}' }, mtimes: {}, remote: [{ key: 'a:settings', value: '{"lang":"fr"}', updated_at: new Date(1).toISOString() }] });
   assert.deepEqual(r.apply, { 'a:settings': '{"lang":"fr"}' });
   assert.deepEqual(r.push, []);
@@ -106,6 +106,161 @@ test('merge: a local deletion newer than the cloud is pushed (as a delete)', () 
   const r2 = sync.mergeKv({ local: {}, mtimes: { 'a:gone': 5000 }, remote: [] });
   assert.deepEqual(r2.push, []);
   assert.equal(r2.mtimes['a:gone'], undefined);
+});
+
+test('merge3: entries added on two devices are all kept; deletions and edits on one side win', () => {
+  const base = sync.describe(JSON.stringify([{ id: 'a', n: 1 }, { id: 'b', n: 1 }, { id: 'c', n: 1 }]));
+  const local = JSON.stringify([{ id: 'a', n: 2 }, { id: 'b', n: 1 }, { id: 'c', n: 1 }, { id: 'l', n: 1 }]);   // edited a, added l
+  const remote = JSON.stringify([{ id: 'a', n: 1 }, { id: 'c', n: 1 }, { id: 'r', n: 1 }]);                      // deleted b, added r
+  const m = JSON.parse(sync.merge3(base, local, remote, false));
+  assert.deepEqual(m.map((x) => x.id).sort(), ['a', 'c', 'l', 'r']);
+  assert.equal(m.find((x) => x.id === 'a').n, 2);
+  // the same entry changed on both: the newer side's copy
+  const both = (preferLocal) => JSON.parse(sync.merge3(base, JSON.stringify([{ id: 'a', n: 'L' }]), JSON.stringify([{ id: 'a', n: 'R' }]), preferLocal))[0].n;
+  assert.equal(both(true), 'L');
+  assert.equal(both(false), 'R');
+});
+
+test('merge3: lists without ids, maps, order and plain values', () => {
+  // appended logs (no ids): both new entries kept, two identical entries stay two
+  const s0 = [{ at: 1, m: 25 }];
+  const m = JSON.parse(sync.merge3(sync.describe(JSON.stringify(s0)), JSON.stringify([...s0, { at: 2, m: 25 }, { at: 2, m: 25 }]), JSON.stringify([...s0, { at: 3, m: 50 }]), true));
+  assert.deepEqual(m.map((x) => x.at), [1, 3, 2, 2]);
+  // newest-first lists keep their shape
+  const w = JSON.parse(sync.merge3(sync.describe('[{"id":"w1"}]'), '[{"id":"w2"},{"id":"w1"}]', '[{"id":"w3"},{"id":"w1"}]', false));
+  assert.deepEqual(w.map((x) => x.id), ['w2', 'w3', 'w1']);
+  // maps (e.g. the Grow activity log by day): union, per-day edits kept
+  assert.deepEqual(JSON.parse(sync.merge3(sync.describe('{"d1":1}'), '{"d1":1,"d2":1}', '{"d1":1,"d3":1}', false)), { d1: 1, d2: 1, d3: 1 });
+  // without a common base (study moving into an account), nothing is dropped
+  assert.deepEqual(JSON.parse(sync.merge3(null, '[{"id":"x"}]', '[{"id":"y"}]', false)).map((x) => x.id).sort(), ['x', 'y']);
+  // plain values and different kinds: the newer side
+  assert.equal(sync.merge3(null, '"a"', '"b"', true), '"a"');
+  assert.equal(sync.merge3(null, '[1]', '{"x":1}', false), '{"x":1}');
+});
+
+test('mergeKv: a key changed on both devices is merged and pushed; changed here only is pushed', () => {
+  const base = { 'a:sessions': sync.describe('[{"id":"s1"}]'), 'a:wins': sync.describe('[{"id":"w1"}]') };
+  const r = sync.mergeKv({
+    local: { 'a:sessions': '[{"id":"s1"},{"id":"s2"}]', 'a:wins': '[{"id":"w1"},{"id":"w2"}]' },
+    mtimes: { 'a:sessions': 1000, 'a:wins': 1000 },
+    pending: ['a:sessions', 'a:wins'],
+    base,
+    remote: [
+      { key: 'a:sessions', value: '[{"id":"s1"},{"id":"s3"}]', updated_at: new Date(2000).toISOString() },   // the other device added s3
+      { key: 'a:wins', value: '[{"id":"w1"}]', updated_at: new Date(2000).toISOString() },                   // unchanged there (newer stamp only)
+    ],
+    now: 5000,
+  });
+  assert.deepEqual(JSON.parse(r.apply['a:sessions']).map((x) => x.id).sort(), ['s1', 's2', 's3']);
+  assert.equal(r.apply['a:wins'], undefined);
+  assert.deepEqual(r.push, ['a:sessions', 'a:wins']);
+  assert.equal(r.mtimes['a:sessions'], 5000);
+  // not changed here: the newer cloud copy simply wins (no resurrection of entries deleted elsewhere)
+  const r2 = sync.mergeKv({ local: { 'a:wins': '[{"id":"w1"},{"id":"w2"}]' }, mtimes: { 'a:wins': 1000 }, base: {}, remote: [{ key: 'a:wins', value: '[{"id":"w1"}]', updated_at: new Date(2000).toISOString() }] });
+  assert.equal(r2.apply['a:wins'], '[{"id":"w1"}]');
+  assert.deepEqual(r2.settled, ['a:wins']);
+});
+
+test('long values go up in parts and come back only when complete', () => {
+  const v = JSON.stringify({ s: 'x'.repeat(25) });
+  const rows = sync.toRows('a:ws:dual:sketches', v, 10);
+  assert.equal(rows.length, 1 + Math.ceil(v.length / 10));
+  assert.ok(rows.every((r) => r.value.length <= 100));
+  assert.equal(sync.syncable('a:ws:dual:sketches#1'), false);
+  const back = sync.fromRows(rows.map((r) => ({ ...r, updated_at: 'x' })));
+  assert.deepEqual(back.map((r) => [r.key, r.value]), [['a:ws:dual:sketches', v]]);
+  assert.deepEqual(sync.fromRows(rows.slice(0, -1)), []);                    // a part is missing: skipped
+  assert.deepEqual(sync.toRows('a:x', 'short', 10), [{ key: 'a:x', value: 'short' }]);
+});
+
+test('study from before accounts moves into the account (never another account’s data)', async () => {
+  localStorage.clear();
+  localStorage.setItem('meletee1:local:a:courses', '[{"id":"c1"}]');
+  localStorage.setItem('meletee1:local:a:settings', '{"lang":"el"}');
+  assert.equal(sync.activate('u1'), true);
+  assert.equal(store.account(), 'u_u1');
+  assert.equal(localStorage.getItem('meletee1:u_u1:a:courses'), '[{"id":"c1"}]');
+  assert.equal(localStorage.getItem('meletee1:local:a:courses'), null);          // moved
+  assert.equal(localStorage.getItem('meletee1:local:a:settings'), '{"lang":"el"}');   // the welcome screen's language stays
+  assert.deepEqual(JSON.parse(localStorage.getItem('meletee1:u_u1:meta:pending')).sort(), ['a:courses', 'a:settings']);
+  // signed in as u1, then someone else signs in: u1's data is not copied
+  assert.equal(sync.activate('u2'), false);
+  assert.equal(localStorage.getItem('meletee1:u_u2:a:courses'), null);
+  // local study meets the account's own copy on this device: merged
+  sync.deactivate();
+  localStorage.setItem('meletee1:local:a:courses', '[{"id":"c2"}]');
+  sync.activate('u1');
+  assert.deepEqual(JSON.parse(localStorage.getItem('meletee1:u_u1:a:courses')).map((c) => c.id).sort(), ['c1', 'c2']);
+  sync.deactivate();
+  localStorage.clear();
+});
+
+test('account gate: e-mail links, local study and rejected refresh tokens', async () => {
+  const gate = await import('../src/cloud/gate.js');
+  const { rejected, redirectTo } = await import('../src/cloud/client.js');
+  assert.deepEqual(gate.readLink('#access_token=a&refresh_token=b&expires_in=60&type=recovery'), { access_token: 'a', refresh_token: 'b', expires_in: 60, expires_at: 0, type: 'recovery' });
+  assert.equal(gate.readLink('#error=access_denied&error_code=otp_expired&error_description=Link+expired').code, 'otp_expired');
+  assert.equal(gate.readLink('#/do/courses'), null);
+  assert.equal(gate.readLink('#/learn/method/x'), null);
+  const mem = new Mem();
+  assert.equal(gate.localStudy(mem), false);
+  mem.setItem('meletee1:local:a:settings', '{"lang":"fr"}');
+  mem.setItem('meletee1:local:a:courses', '[]');
+  assert.equal(gate.localStudy(mem), false);
+  mem.setItem('meletee1:local:a:sessions', '[{"at":1}]');
+  assert.equal(gate.localStudy(mem), true);
+  assert.equal(rejected(Object.assign(new Error('Invalid Refresh Token: Refresh Token Not Found'), { status: 400 })), true);
+  assert.equal(rejected(Object.assign(new Error('network'), { network: true })), false);
+  assert.equal(rejected(Object.assign(new Error('upstream'), { status: 503 })), false);
+  assert.equal(redirectTo({ protocol: 'https:', origin: 'https://meletee.netlify.app', pathname: '/' }), 'https://meletee.netlify.app/');
+  assert.equal(redirectTo({ protocol: 'file:', origin: 'null', pathname: '/x/meletee.html' }), '');
+});
+
+test('e-mail links: sign-up and recovery ask Supabase to link back to Meletee, not to noema-lite', async () => {
+  // the shared project's Site URL is noema-lite's, so every e-mail link carries redirect_to
+  const mem = new Mem();
+  const calls = [];
+  const fetchImpl = async (url, opts) => {
+    calls.push([url, opts.method]);
+    if (url.includes('/auth/v1/user') && opts.method === 'GET') return new Response(JSON.stringify({ id: 'u1', email: 'ada@example.com' }), { status: 200 });
+    return new Response('{}', { status: 200 });
+  };
+  const here = { protocol: 'https:', origin: 'https://meletee.netlify.app', pathname: '/' };
+  const old = globalThis.location;
+  globalThis.location = here;
+  try {
+    const c = createRestClient({ supabaseUrl: 'https://x.supabase.co', supabaseKey: 'sb_publishable_x' }, { fetchImpl, storage: mem });
+    await c.signUp('ada@example.com', 'a-long-password', 'Ada');
+    await c.recover('ada@example.com');
+    const back = encodeURIComponent('https://meletee.netlify.app/');
+    assert.deepEqual(calls.map(([u]) => u), [
+      `https://x.supabase.co/auth/v1/signup?redirect_to=${back}`,
+      `https://x.supabase.co/auth/v1/recover?redirect_to=${back}`,
+    ]);
+    // landing back from the link: the tokens become the session, then the new password is saved
+    await c.fromLink({ access_token: 'at', refresh_token: 'rt', expires_in: 3600 });
+    assert.equal(c.session().user.email, 'ada@example.com');
+    await c.setPassword('another-password');
+    assert.deepEqual(calls.at(-1), ['https://x.supabase.co/auth/v1/user', 'PUT']);
+  } finally { if (old === undefined) delete globalThis.location; else globalThis.location = old; }
+});
+
+test('REST client: an expired session survives a network failure and is dropped only when the server rejects it', async () => {
+  const mem = new Mem();
+  mem.setItem('meletee1:cloud:session', JSON.stringify({ access_token: 'old', refresh_token: 'r1', expires_at: 1, user: { id: 'u' } }));
+  let mode = 'offline'; let refreshes = 0;
+  const fetchImpl = async (url) => {
+    if (url.includes('grant_type=refresh_token')) refreshes++;
+    if (mode === 'offline') throw new TypeError('Failed to fetch');
+    return new Response(JSON.stringify({ error: 'invalid_grant', error_description: 'Invalid Refresh Token: Already Used' }), { status: 400 });
+  };
+  const c = createRestClient({ supabaseUrl: 'https://x.supabase.co', supabaseKey: 'sb_publishable_x' }, { fetchImpl, storage: mem });
+  await assert.rejects(Promise.all([c.select('meletee_kv'), c.select('meletee_kv')]), /network/);
+  assert.equal(refreshes, 1);                       // one refresh for both calls
+  assert.ok(c.session());                           // still signed in, offline
+  mode = 'rejected';
+  await assert.rejects(c.select('meletee_kv'), /Invalid Refresh Token/);
+  assert.equal(c.session(), null);
 });
 
 test('sync engine with a fake backend: sign in, push, pull, snapshots', async () => {

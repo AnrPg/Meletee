@@ -2,7 +2,7 @@
 // plus English light on the phone. Serious and critical violations fail the test. Also checks
 // keyboard basics: sheets trap focus, close on Escape and give focus back; the skip link works.
 // No real network: Supabase is absent (signed out) and noema-lite is answered by page.route().
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test.js';
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 

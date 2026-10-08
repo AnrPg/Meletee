@@ -12,7 +12,7 @@ Rules that apply to every phase:
 - **Four languages from day one:** English, Ελληνικά, Русский and Français. Every string and every piece of content goes through the translation layer.
 - **Two AI providers, each doing what it is best at.** Gemini does the quick, structured jobs. Claude does the long conversations and the careful judgement. Each tool falls back to the other provider if only one key is set, and to a self-check mode when offline.
 - **Compatible with noema-lite.** It uses the same ids, the same conversation format, the same look and the same accounts.
-- **Your data is yours.** The app works fully offline on one device. The cloud is optional, and API keys never leave the device.
+- **Your data is yours.** The app works offline once signed in, and an account (shared with noema-lite, required since 1.1) keeps every bit of progress safe across devices. API keys never leave the device.
 
 ## Architecture
 

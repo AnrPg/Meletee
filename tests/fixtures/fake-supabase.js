@@ -36,13 +36,37 @@
   W.__meleteeSupabase = {
     fake: true,
     session() { return JSON.parse(LS.getItem(SK) || 'null'); },
+    // Accounts: ada@example.com (password 'correct-horse') always exists, like a noema-lite account.
+    // Sign-ups are kept in db.users; with db.autoConfirm they are signed in at once, otherwise they must
+    // be confirmed first (window.__fakeConfirm(email)).
     async signIn(email, password) {
-      if (password !== 'correct-horse') throw new Error('Invalid login credentials');
-      LS.setItem(SK, JSON.stringify({ access_token: 'x', refresh_token: 'y', expires_at: 9e9, user: { ...USER, email } }));
+      const db = fail();
+      const u = (db.users || []).find((x) => x.email === email);
+      if (u ? u.password !== password : password !== 'correct-horse') throw new Error('Invalid login credentials');
+      if (u && !u.confirmed) throw new Error('Email not confirmed');
+      LS.setItem(SK, JSON.stringify({ access_token: 'x', refresh_token: 'y', expires_at: 9e9, user: { ...(u ? { id: u.id } : USER), email } }));
+      db.log.push({ op: 'signIn', email }); save(db);
       return true;
     },
-    async signUp(email, password) { if (password.length < 8) throw new Error('Password should be at least 8 characters'); return { session: false }; },
-    async recover() {},
+    async signUp(email, password, name) {
+      const db = fail();
+      if (password.length < 8) throw new Error('Password should be at least 8 characters');
+      if (email === USER.email || (db.users || []).some((x) => x.email === email)) throw new Error('User already registered');
+      const u = { id: '99999999-0000-4000-8000-' + String(Date.now()).slice(-12).padStart(12, '0'), email, password, name, confirmed: !!db.autoConfirm };
+      (db.users ||= []).push(u); db.log.push({ op: 'signUp', email }); save(db);
+      if (!db.autoConfirm) return { session: false };
+      LS.setItem(SK, JSON.stringify({ access_token: 'x', refresh_token: 'y', expires_at: 9e9, user: { id: u.id, email } }));
+      return { session: true };
+    },
+    async recover(email) { const db = fail(); db.log.push({ op: 'recover', email }); save(db); },
+    async fromLink({ access_token }) {
+      const db = fail();
+      if (access_token !== 'link-token') throw new Error('invalid JWT');
+      LS.setItem(SK, JSON.stringify({ access_token: 'x', refresh_token: 'y', expires_at: 9e9, user: USER }));
+      db.log.push({ op: 'fromLink' }); save(db);
+      return true;
+    },
+    async setPassword(password) { const db = fail(); db.log.push({ op: 'setPassword', n: password.length }); save(db); },
     async signOut() { LS.removeItem(SK); },
     async select(table, { filters = [], order, limit } = {}) {
       const db = fail();
@@ -91,4 +115,5 @@
     },
   };
   W.__fakeUser = USER;
+  W.__fakeConfirm = (email) => { const db = load(); const u = (db.users || []).find((x) => x.email === email); if (u) u.confirmed = true; save(db); };
 })();

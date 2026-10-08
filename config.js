@@ -8,4 +8,6 @@ window.MELETEE_CONFIG = {
   noemaUrl: 'https://noema-lite.netlify.app',
   supabaseUrl: 'https://awlvbxlpvjkhkreumfln.supabase.co',
   supabaseKey: 'sb_publishable_dsXV2ViLUJV3jOuuctz5ng_MYfQ2H_Z',
+  // An account (the same one as noema-lite) is needed to use the app, so study is never lost.
+  requireAccount: true,
 };

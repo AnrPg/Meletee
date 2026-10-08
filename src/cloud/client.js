@@ -7,6 +7,8 @@
 //   signIn(email, password)           -> true
 //   signUp(email, password, name)     -> { session: boolean }   (false = confirm the e-mail first)
 //   recover(email) / signOut()
+//   fromLink({ access_token, refresh_token, expires_in }) -> signs in from an e-mail link (confirm, reset)
+//   setPassword(password)             (signed in; after a reset link)
 //   select(table, { select, filters, order, limit }) -> rows      filters: [[column, op, value]], op: eq | like | gt
 //   upsert(table, rows, { onConflict }) / insert(table, rows, { returning }) / remove(table, filters)
 //   download(bucket, path, { isPublic }) -> parsed JSON
@@ -14,7 +16,7 @@ const SKEY = 'meletee1:cloud:session';
 
 export function config() {
   const c = (typeof window !== 'undefined' && window.MELETEE_CONFIG) || {};
-  return { supabaseUrl: c.supabaseUrl || '', supabaseKey: c.supabaseKey || '', noemaUrl: (c.noemaUrl || '').replace(/\/+$/, '') };
+  return { supabaseUrl: c.supabaseUrl || '', supabaseKey: c.supabaseKey || '', noemaUrl: (c.noemaUrl || '').replace(/\/+$/, ''), requireAccount: c.requireAccount !== false };
 }
 
 // PostgREST query string from filters (pure; unit-tested).
@@ -27,6 +29,16 @@ export function query({ select, filters = [], order, limit, onConflict } = {}) {
   if (onConflict) q.push('on_conflict=' + encodeURIComponent(onConflict));
   return q.length ? '?' + q.join('&') : '';
 }
+
+// Where Supabase's e-mail links (confirm the address, reset the password) come back to: this page.
+// The address must be listed in Authentication → URL Configuration → Redirect URLs (cloud/README.md),
+// otherwise Supabase falls back to the project's Site URL.
+export function redirectTo(loc = typeof location !== 'undefined' ? location : null) {
+  return loc && /^https?:$/.test(loc.protocol) ? loc.origin + loc.pathname : '';
+}
+
+// The server turned the refresh token down (revoked, expired, unknown), as opposed to a network failure.
+export const rejected = (e) => !e?.network && [400, 401, 403].includes(e?.status) && /invalid|expired|not found|revoked|refresh token/i.test(e?.message || '');
 
 const jget = (storage, k) => { try { const v = storage?.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } };
 
@@ -65,12 +77,32 @@ export function createRestClient({ supabaseUrl, supabaseKey }, { fetchImpl, stor
     return j;
   }
 
+  // One refresh at a time (Supabase rotates refresh tokens; parallel refreshes would race each other).
+  let refreshing = null;
   async function fresh() {
     const s = session();
     if (!s) throw new Error('signed out');
     if (s.expires_at - 60 > Date.now() / 1000) return s;
-    const j = await call('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: { refresh_token: s.refresh_token }, auth: false })
-      .catch((e) => { if (/invalid|expired|not found/i.test(e.message)) setSession(null); throw e; });
+    refreshing ||= refresh(s).finally(() => { refreshing = null; });
+    return refreshing;
+  }
+
+  async function refresh(s) {
+    // Offline (or the server is unreachable), the cached session stays: the app keeps working on this
+    // device and syncs later. Only a refresh token the server truly rejects signs the learner out.
+    let j;
+    try {
+      j = await call('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: { refresh_token: s.refresh_token }, auth: false });
+    } catch (e) {
+      // another tab may have refreshed in the meantime: then its new session is used
+      const now = session();
+      if (now && now.refresh_token !== s.refresh_token) return now;
+      if (rejected(e)) {
+        setSession(null);
+        try { window.dispatchEvent(new CustomEvent('meletee:signedout')); } catch { /* not a browser */ }
+      }
+      throw e;
+    }
     setSession(j);
     return session();
   }
@@ -85,12 +117,23 @@ export function createRestClient({ supabaseUrl, supabaseKey }, { fetchImpl, stor
       return true;
     },
     async signUp(email, password, name) {
-      const j = await call('/auth/v1/signup', { method: 'POST', auth: false, body: { email, password, data: { name: name || email.split('@')[0] } } });
+      const back = redirectTo();
+      const j = await call('/auth/v1/signup' + (back ? '?redirect_to=' + encodeURIComponent(back) : ''), { method: 'POST', auth: false, body: { email, password, data: { name: name || email.split('@')[0] } } });
       const s = j?.access_token ? j : j?.session;
       if (s?.access_token) { setSession(s); return { session: true }; }
       return { session: false };
     },
-    async recover(email) { await call('/auth/v1/recover', { method: 'POST', auth: false, body: { email } }); },
+    async recover(email) {
+      const back = redirectTo();
+      await call('/auth/v1/recover' + (back ? '?redirect_to=' + encodeURIComponent(back) : ''), { method: 'POST', auth: false, body: { email } });
+    },
+    async fromLink({ access_token, refresh_token, expires_in, expires_at }) {
+      const u = await call('/auth/v1/user', { auth: false, headers: { Authorization: 'Bearer ' + access_token } });
+      if (!u?.id) throw new Error('invalid link');
+      setSession({ access_token, refresh_token, expires_in, expires_at: expires_at || undefined, user: u });
+      return true;
+    },
+    async setPassword(password) { await call('/auth/v1/user', { method: 'PUT', body: { password } }); },
     async signOut() { try { await call('/auth/v1/logout', { method: 'POST' }); } catch { /* offline is fine */ } setSession(null); },
     select(table, opts = {}) { return call(`/rest/v1/${table}${query(opts)}`).then((r) => r || []); },
     upsert(table, rows, { onConflict, keepalive } = {}) {

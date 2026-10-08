@@ -1,11 +1,13 @@
-// Settings section for the account and cloud sync: sign in with the noema-lite account (optional),
-// sync status, restore points and sign out. Returns null when no Supabase project is configured.
+// Settings section for the account and cloud sync: sync status, restore points and sign out (back to
+// the welcome screen, src/views/welcome.js). The sign-in sheet here is used only when config.js turns
+// requireAccount off. Returns null when no Supabase project is configured.
 import { h, sheet, toast } from '../core/dom.js';
 import { t, tn, lang } from '../core/i18n.js';
 import { confirmSheet } from '../ui/forms.js';
 import { backend } from './client.js';
 import * as sync from './sync.js';
-import { loadStore } from './convos.js';
+import { loadStore, pushConvos } from './convos.js';
+import * as store from '../core/store.js';
 
 const reload = () => setTimeout(() => location.reload(), 500);
 
@@ -16,15 +18,25 @@ function statusText(s) {
   return t('cloud.status.synced');
 }
 
-export async function afterSignIn() {
+// Right after signing in (welcome screen, e-mail link or the sheet below): study kept on this device
+// before there were accounts moves into the account (sync.activate), with its AI conversations; then the
+// account's data comes down from the cloud before the app starts ("bringing your study over…").
+export async function afterSignIn({ wait = 12000 } = {}) {
   const b = backend();
-  // AI conversations saved before signing in come along (ids are unique, so copying twice never duplicates)
-  const convos = await loadStore();
+  const fromLocal = !store.account().startsWith('u_');
+  const convos = fromLocal ? await loadStore() : null;
   let before = [];
   try { before = convos?.list ? await convos.list({ includeDeleted: true }) : []; } catch { before = []; }
-  await sync.activate(b.session().user.id);
-  for (const r of before) { try { await convos.put(r, { keepUpdatedAt: true }); } catch { /* keep going */ } }
-  try { await Promise.race([sync.pull().then(() => sync.push()), new Promise((r) => setTimeout(r, 7000))]); } catch { /* will retry after reload */ }
+  sync.activate(b.session().user.id);
+  if (before.length) {
+    // ids are unique, so copying twice never duplicates; the local copies go once they are in the account
+    let ok = true;
+    for (const r of before) { try { await convos.put(r, { keepUpdatedAt: true }); } catch { ok = false; } }
+    if (ok) try { await convos.purgeAccount?.('local'); } catch { /* they stay; ids make a second copy harmless */ }
+  }
+  // offline, or slower than `wait`: the app opens and syncs in the background instead of making them wait
+  const first = (async () => { await sync.firstSync(); await sync.push(); })().catch(() => {});
+  await Promise.race([first, new Promise((r) => setTimeout(r, wait))]);
 }
 
 function signInSheet() {
@@ -138,7 +150,9 @@ export function cloudSettings() {
       h('a', { href: '#/noema' }, h('span.label', '🦉 ', t('cloud.noemaLink'))),
       h('button', { onclick: async () => {
         if (!(await confirmSheet({ title: t('cloud.signOutTitle'), text: t('cloud.signOutText'), ok: t('cloud.signOut') }))) return;
+        // whatever is still waiting goes up first (and stays queued on this device if offline)
         await sync.push().catch(() => {});
+        await pushConvos().catch(() => {});
         await b.signOut();
         sync.deactivate();
         reload();
