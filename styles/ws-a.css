@@ -1,1 +1,87 @@
-/* Workspaces, group a */
+/* Workspaces, group a: recall, srs, interleave, pretest, relearn (+ shared deck pieces) */
+
+/* ---------- shared deck ---------- */
+.ws-deck-list>.ws-deck-item{align-items:flex-start}
+.ws-deck-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+.ws-deck-text .label{font-weight:650}
+.ws-deck-text .badge{align-self:flex-start;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-deck-actions{gap:0;flex:none;margin-left:auto}
+
+.ws-flip{display:flex;flex-direction:column;gap:var(--s4);padding:var(--s5) var(--s5) var(--s6);animation:wsFlipIn var(--t2) var(--ease-soft) both}
+.ws-flip-meta{justify-content:space-between;gap:var(--s2)}
+.ws-flip .progress{margin-top:0}
+.ws-flip-q{font-size:clamp(19px,5vw,22px);font-weight:700;line-height:1.35;margin:var(--s2) 0;overflow-wrap:anywhere;white-space:pre-wrap}
+.ws-flip-a,.ws-flip-mine{padding:var(--s4);border-radius:var(--r-sm);background:var(--bg2);overflow-wrap:anywhere;white-space:pre-wrap}
+.ws-flip-a{background:var(--leaf-bg)}
+.ws-flip-a p,.ws-flip-mine p{margin:0}
+.ws-flip-a .eyebrow,.ws-flip-mine .eyebrow{margin-bottom:var(--s1)}
+.ws-flip-sure .seg{align-self:flex-start}
+.ws-flip-sure p{margin:0}
+.ws-flip-grades{gap:var(--s2)}
+.ws-flip-grades .btn{flex:1 1 0;min-width:0;padding:0 var(--s3)}
+.ws-flip>.muted.small{margin:0}
+@keyframes wsFlipIn{from{opacity:0;transform:translateY(8px) rotate(-.4deg)}to{opacity:1;transform:none}}
+
+/* ---------- recall ---------- */
+.ws-recall .lede{margin:0}
+.ws-recall-tip{margin-top:var(--s5)}
+.ws-recall-emoji,.ws-srs-big,.ws-il-emoji,.ws-pt-emoji,.ws-rl-emoji{font-size:44px;line-height:1;margin:0}
+.ws-recall-sum .center>*{margin:0}
+.ws-recall-cw{border-left:4px solid var(--peach)}
+.ws-recall-cw h3{margin:0 0 var(--s1)}
+
+/* ---------- srs ---------- */
+.ws-srs-today h2,.ws-srs-today p{margin:0}
+.ws-srs-today.stack>*+*{margin-top:var(--s3)}
+.ws-srs-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--s2);align-items:end}
+.ws-srs-day{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.ws-srs-day .muted{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-size:12.5px}
+.ws-srs-bar{width:100%;max-width:26px;border-radius:8px;background:var(--c-bg);transition:height var(--t3) var(--ease-soft)}
+.ws-srs-bar[data-empty="true"]{background:var(--bg2)}
+.ws-srs-boxes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--s2)}
+.ws-srs-box{display:flex;flex-direction:column;align-items:center;gap:2px;padding:var(--s3) 2px;border-radius:var(--r-sm);background:var(--bg2);text-align:center;min-width:0}
+.ws-srs-box .muted{font-size:11.5px;line-height:1.2;overflow-wrap:anywhere}
+.ws-srs-box-n{font-size:20px;font-weight:800}
+.ws-srs-done>*{margin-left:auto;margin-right:auto}
+
+/* ---------- interleave ---------- */
+.ws-il .lede{margin:0}
+.ws-il-chips{gap:var(--s2)}
+.ws-il-chips .chip,.ws-il-kind .chip{max-width:100%;overflow-wrap:anywhere;text-align:left;height:auto;padding-top:6px;padding-bottom:6px}
+.ws-il-kind{padding:var(--s4);border-radius:var(--r-sm);background:var(--bg2)}
+.ws-il-kind p{margin:0}
+.ws-il-kind .row{gap:var(--s2)}
+.ws-il-feedback{font-weight:700;color:var(--leaf)}
+.ws-il-feedback[data-ok="false"]{color:var(--ink2)}
+.ws-il-done p{margin:0}
+
+/* ---------- pretest ---------- */
+.ws-pt-back{align-self:flex-start;margin-left:-12px}
+.ws-pt .lede{margin:0}
+.ws-pt h2{margin:0 0 var(--s1);overflow-wrap:anywhere}
+.ws-pt-item h3{overflow-wrap:anywhere}
+.ws-pt-qs{padding-left:1.2em;margin:0;display:flex;flex-direction:column;gap:var(--s5)}
+.ws-pt-qs.plain{padding-left:0}
+.ws-pt-q{font-weight:700;overflow-wrap:anywhere;margin:0}
+.ws-pt-guess,.ws-pt-answer{padding:var(--s3) var(--s4);border-radius:var(--r-sm);background:var(--bg2);overflow-wrap:anywhere}
+.ws-pt-answer{background:var(--leaf-bg)}
+.ws-pt-guess p,.ws-pt-answer p{margin:0}
+.ws-pt-guess .eyebrow,.ws-pt-answer .eyebrow{margin-bottom:var(--s1)}
+.ws-pt-review li{overflow-wrap:anywhere}
+.ws-pt-review li>*{margin:0}
+.ws-pt-review li.stack>*+*{margin-top:var(--s1)}
+.ws-pt .center>*{margin:0}
+
+/* ---------- relearn ---------- */
+.ws-rl .lede{margin:0}
+.ws-rl-set h3{overflow-wrap:anywhere}
+.ws-rl-set p{margin:0}
+.ws-rl-dots{font-size:15px;letter-spacing:2px}
+.ws-rl-pick{max-height:50vh;overflow:auto}
+.ws-rl-pick .check{overflow-wrap:anywhere}
+.ws-rl-pick .check span{min-width:0}
+.ws-rl-left{margin:0}
+.ws-rl-done>*{margin-left:auto;margin-right:auto}
+
+/* checkboxes here are settings, not to-dos: no strike-through when ticked */
+.ws-recall-sure input:checked+span,.ws-pt-surprise input:checked+span,.ws-rl-pick input:checked+span{color:inherit;text-decoration:none}

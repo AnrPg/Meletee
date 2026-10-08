@@ -1,6 +1,6 @@
 # Meletee: implementation plan
 
-Meletee takes its name from Μελέτη (Melete), the Muse of practice; the word is Greek for study.
+Named Meletee (from Μελέτη, the Muse of practice; Greek for study). Code: https://github.com/AnrPg/Meletee
 
 ## What we are building
 
@@ -21,8 +21,8 @@ Rules that apply to every phase:
 | Front end | Vanilla JavaScript ES modules and plain CSS, no framework | Same as noema-lite, so the code can later be shared or merged. Fast, small and with nothing to upgrade. |
 | Build | A small Node script: copies, fingerprints and bundles into `dist/site`, plus an optional single-file HTML | Same idea as noema-lite's `tools/build.py`. |
 | Hosting | Netlify, static site | Same as noema-lite. |
-| Storage on device | localStorage for small state; IndexedDB for sessions, logs and drawings | Works offline. Keys are namespaced `meletee1:<account>:…`, mirroring noema-lite's `noema1:` scheme. |
-| Cloud (optional) | The same Supabase project as noema-lite, with the same users and its own `meletee_*` tables and row-level security | One sign-in for both apps. The two apps never write each other's rows. |
+| Storage on device | localStorage for small state; IndexedDB for sessions, logs and drawings | Works offline. Keys are namespaced `melete1:<account>:…`, mirroring noema-lite's `noema1:` scheme. |
+| Cloud (optional) | The same Supabase project as noema-lite, with the same users and its own `melete_*` tables and row-level security | One sign-in for both apps. The two apps never write each other's rows. |
 | Real-time (buddies) | Supabase Realtime channels | Synced Pomodoro rooms, pings and presence. |
 | Translations | `i18n/<lang>.json` for interface strings and `content/<lang>/*.json` for the compendium content | Content is generated from the compendium tabs, so the app and the doc say the same thing. |
 | AI | One `ai/` layer with two providers: Claude through the Messages API, called from the browser with the user's own key, and Gemini through the Generative Language API. A task router picks the provider for each tool. | Matches noema-lite: keys stay on the device and no server holds them. |
