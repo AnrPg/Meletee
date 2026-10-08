@@ -9,7 +9,7 @@ const REGISTRY = readFileSync(new URL('./fixtures/noema-registry.js', import.met
 const FAKE = new URL('./fixtures/fake-supabase.js', import.meta.url).pathname;
 const NOEMA = 'https://noema-lite.netlify.app';
 
-async function open(page, hash = '', { lang = 'en', fake = true, cors = true } = {}) {
+async function open(page, hash = '', { lang = 'en', fake = true, cors = true, proxy = false } = {}) {
   await page.addInitScript((l) => { if (!localStorage.getItem('meletee1:local:a:settings') && !localStorage.getItem('meletee1:current')) localStorage.setItem('meletee1:local:a:settings', JSON.stringify({ lang: l })); }, lang);
   if (fake) await page.addInitScript({ path: FAKE });
   const real = [];
@@ -22,10 +22,19 @@ async function open(page, hash = '', { lang = 'en', fake = true, cors = true } =
     if (u.pathname === '/library/subjects/databricks/pack.js') return r.fulfill({ status: 200, contentType: 'text/javascript', body: `(window.NOEMA_PACKS = window.NOEMA_PACKS || {})["databricks"] = ${PACK};` });
     return r.fulfill({ status: 404, body: '' });
   });
+  // Netlify's same-origin proxy of noema-lite's library (docs/SECURITY-HEADERS.md); the dev server has none.
+  const proxied = [];
+  await page.route('**/noema-library/**', (r) => {
+    const u = new URL(r.request().url());
+    proxied.push(u.pathname);
+    if (proxy && u.pathname === '/noema-library/registry.js') return r.fulfill({ status: 200, contentType: 'text/javascript', body: REGISTRY });
+    if (proxy && u.pathname === '/noema-library/subjects/databricks/pack.json') return r.fulfill({ status: 200, contentType: 'application/json', body: PACK });
+    return r.fulfill({ status: 404, body: '' });
+  });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/' + hash);
-  return { errors, real };
+  return { errors, real, proxied };
 }
 
 const noScroll = async (page) => expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
@@ -126,9 +135,29 @@ test('import a noema-lite subject as a course, with deep links on its topics', a
   expect(errors).toEqual([]);
 });
 
-test('without CORS the pack still loads through noema-lite’s pack.js', async ({ page }) => {
-  const { errors } = await open(page, '#/noema/databricks', { cors: false });
+test('without CORS the library loads as data through the same-origin proxy, never as a script', async ({ page }) => {
+  const scripts = [];
+  page.on('request', (q) => { if (q.resourceType() === 'script' && !q.url().startsWith('http://localhost')) scripts.push(q.url()); });
+  const { errors, proxied } = await open(page, '#/noema/databricks', { cors: false, proxy: true });
   await expect(page.getByRole('button', { name: 'Import as a course' })).toBeVisible();
+  expect(proxied).toContain('/noema-library/subjects/databricks/pack.json');
+  expect(scripts).toEqual([]);
+  expect(await page.evaluate(() => [typeof window.NOEMA_PACKS, typeof window.NOEMA_REGISTRY, document.querySelectorAll('script[src*="noema"]').length])).toEqual(['undefined', 'undefined', 0]);
+  expect(errors).toEqual([]);
+});
+
+test('without the proxy the library is fetched from noema-lite as data; pack.js / registry.js never run', async ({ page }) => {
+  const scripts = [], packJs = [];
+  page.on('request', (q) => {
+    if (q.resourceType() === 'script' && q.url().includes('noema-lite')) scripts.push(q.url());
+    if (q.url().endsWith('/pack.js')) packJs.push(q.url());
+  });
+  const { errors, proxied } = await open(page, '#/noema/databricks');
+  await expect(page.getByRole('button', { name: 'Import as a course' })).toBeVisible();
+  expect(proxied).toContain('/noema-library/registry.js'); // tried first, 404 on the dev server
+  expect(scripts).toEqual([]);
+  expect(packJs).toEqual([]);
+  expect(await page.evaluate(() => [typeof window.NOEMA_PACKS, typeof window.NOEMA_REGISTRY])).toEqual(['undefined', 'undefined']);
   expect(errors).toEqual([]);
 });
 

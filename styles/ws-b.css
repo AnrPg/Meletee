@@ -29,7 +29,7 @@
 .ws-b-gaps li{margin:4px 0;overflow-wrap:anywhere}
 .ws-b-flaghead{margin:0;font-weight:650}
 .ws-b-back{margin-left:-12px;align-self:flex-start}
-.ws-b-danger{color:var(--bad)}
+.ws-b-danger{color:var(--bad-ink)}
 .ws-b-fold{border-radius:var(--r);background:var(--bg2);padding:var(--s4) var(--s5)}
 .ws-b-fold>summary{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:6px;min-height:28px}
 .ws-b-fold>summary::-webkit-details-marker{display:none}
@@ -40,7 +40,7 @@
 /* blank */
 .ws-blank-points li{display:flex;gap:var(--s3);align-items:baseline;overflow-wrap:anywhere}
 .ws-blank-mark{width:24px;height:24px;flex:none;display:inline-grid;place-items:center;border-radius:50%;font-weight:800;font-size:13px;background:var(--bg2);color:var(--ink3)}
-.ws-blank-points [data-status="found"] .ws-blank-mark{background:var(--leaf-bg);color:var(--leaf)}
+.ws-blank-points [data-status="found"] .ws-blank-mark{background:var(--leaf-bg);color:var(--leaf-ink)}
 .ws-blank-points [data-status="partial"] .ws-blank-mark{background:var(--warn-bg);color:var(--warn)}
 .ws-blank-points [data-status="gap"]>span:nth-child(2){color:var(--ink2)}
 
@@ -49,7 +49,7 @@
 .ws-feynman-word{background:var(--warn-bg);border-color:transparent;color:var(--ink);font-weight:600;min-height:34px;overflow-wrap:anywhere;max-width:100%}
 .ws-feynman-word[data-why="marked"]{background:var(--peach-bg)}
 .ws-feynman-x{color:var(--ink3);font-size:12px}
-.ws-feynman-word:hover .ws-feynman-x{color:var(--leaf)}
+.ws-feynman-word:hover .ws-feynman-x{color:var(--leaf-ink)}
 .ws-feynman-stuck li{border-bottom:none;padding:0}
 
 /* teach */
@@ -73,7 +73,7 @@
 .ws-selfexp-n{width:28px;height:28px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--c-bg);color:var(--c);font-weight:800;font-size:14px}
 .ws-selfexp-text{flex:1;min-width:0;margin:2px 0 0;font-weight:600;white-space:pre-wrap;overflow-wrap:anywhere}
 .ws-selfexp-tag{flex:none}
-.ws-selfexp-step[data-state="explained"] .ws-selfexp-tag{background:var(--leaf-bg);color:var(--leaf)}
+.ws-selfexp-step[data-state="explained"] .ws-selfexp-tag{background:var(--leaf-bg);color:var(--leaf-ink)}
 .ws-selfexp-step[data-state="stuck"] .ws-selfexp-tag{background:var(--card)}
 .ws-selfexp-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s3)}
 .ws-selfexp-counts .card{padding:var(--s4) var(--s3);text-align:center;display:flex;flex-direction:column;align-items:center}

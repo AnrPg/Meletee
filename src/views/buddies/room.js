@@ -8,7 +8,7 @@ import { iso } from '../../core/dates.js';
 import * as data from '../../buddies/data.js';
 import { rpc, realtimeInfo } from '../../buddies/rpc.js';
 import { joinRoom } from '../../buddies/room.js';
-import { ROOM_PRESETS, startTimer, stopTimer, timerView } from '../../buddies/logic.js';
+import { ROOM_PRESETS, startTimer, stopTimer, timerView, cleanTimer, roomMinutes } from '../../buddies/logic.js';
 import { back, avatar } from './ui.js';
 
 const R = 92, C = 2 * Math.PI * R;
@@ -16,7 +16,7 @@ const fmt = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Mat
 const roomName = (r, meId) => (r.owner === meId ? t('buddies.room.yours') : t('buddies.room.of', { name: r.name }));
 
 function timerLine(tm) {
-  const v = timerView(tm);
+  const v = timerView(cleanTimer(tm));
   if (v.phase === 'focus') return t('buddies.room.focusLeft', { n: Math.ceil(v.left / 60000) });
   if (v.phase === 'break') return t('buddies.room.breakLeft', { n: Math.ceil(v.left / 60000) });
   return null;
@@ -86,8 +86,12 @@ export async function roomView({ id }, node, card) {
   const ring = ringEl(time, label);
   const controls = h('div.stack.center.bud-controls');
   let chosen = ROOM_PRESETS[0];
-  let state = { mode: 'connecting', timer: room.timer, members: [] };
+  let state = { mode: 'connecting', timer: cleanTimer(room.timer), members: [] };
   let lastPhase = null, lastControls = null;
+  // How long I was actually here during the current shared focus block (only while this screen runs;
+  // a gap longer than a throttled background tab's tick, e.g. a sleeping laptop, does not count).
+  let present = { block: null, ms: 0 }, lastTick = Date.now();
+  const GAP = 90000;
 
   const visit = joinRoom(id, { me, rpc, info: realtimeInfo(), onChange: (s) => { state = s; paint(); } });
 
@@ -113,6 +117,12 @@ export async function roomView({ id }, node, card) {
 
   const paint = () => {
     const v = timerView(state.timer);
+    const now = Date.now(), dt = now - lastTick;
+    lastTick = now;
+    if (v.phase === 'focus' && state.timer) {
+      if (present.block !== state.timer.startedAt) present = { block: state.timer.startedAt, ms: 0 };
+      if (dt > 0 && dt <= GAP) present.ms += Math.min(dt, now - state.timer.startedAt);
+    }
     time.textContent = v.phase === 'idle' ? `${chosen.focus}:00` : fmt(v.left);
     label.textContent = t(`buddies.room.phase.${v.phase}`);
     ring.querySelector('.ring-arc').style.strokeDashoffset = String(v.phase === 'idle' ? 0 : C * Math.max(0, v.left) / (v.total || 1));
@@ -129,8 +139,10 @@ export async function roomView({ id }, node, card) {
     drawControls(v.phase === 'idle' ? 'idle' : 'running');
     // follow the shared phase: my status, and a logged session when a shared focus block ends
     if (v.phase !== lastPhase) {
-      if (lastPhase === 'focus' && v.phase !== 'focus' && state.timer?.startedAt && Date.now() >= state.timer.endsAt) {
-        if (logOnce(`${id}:${state.timer.startedAt}`, state.timer.minutes)) toast(t('buddies.room.logged', { n: state.timer.minutes }));
+      if (lastPhase === 'focus' && v.phase !== 'focus' && state.timer?.startedAt && now >= state.timer.endsAt && present.block === state.timer.startedAt) {
+        // only the minutes I was here for, never more than the block (cleanTimer caps it at 120)
+        const mins = roomMinutes(state.timer, present.ms);
+        if (mins > 0 && logOnce(`${id}:${state.timer.startedAt}`, mins)) toast(t('buddies.room.logged', { n: mins }));
       }
       lastPhase = v.phase;
       visit.setStatus(v.phase === 'focus' ? 'focus' : v.phase === 'break' ? 'break' : 'here');

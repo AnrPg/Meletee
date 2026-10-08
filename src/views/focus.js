@@ -1,6 +1,6 @@
 // Focus timer (Pomodoro). The timer lives in storage as an absolute end time,
 // so it survives reloads and keeps counting while the tab sleeps.
-import { h, svg, toast } from '../core/dom.js';
+import { h, svg, toast, announce } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import * as store from '../core/store.js';
 import * as study from '../core/study.js';
@@ -80,7 +80,7 @@ export function focus() {
   };
 
   const running = (tm) => {
-    const time = h('div.ring-time');
+    const time = h('div.ring-time', { role: 'timer', 'aria-live': 'off' });
     const label = h('div.ring-label', tm.phase === 'focus' ? t('focus.focusing') : t('focus.resting'));
     const arc = ring(0, time, label);
     const pauseBtn = h('button.btn.soft', { onclick: () => {
@@ -123,6 +123,7 @@ export function focus() {
     if (tm.phase === 'focus') {
       study.logSession({ date: iso(), minutes: tm.minutes, preset: tm.preset });
       saveTimer({ ...tm, phase: 'recall' });
+      announce(t('focus.done', { n: tm.minutes }));
     } else {
       saveTimer(null);
       toast(t('focus.breakOver'));
@@ -167,6 +168,7 @@ export function focus() {
   render();
   return h('div.stack-lg',
     h('a.btn.ghost.small', { href: '#/do', style: { marginLeft: '-12px', alignSelf: 'flex-start' } }, icon('back'), t('nav.do')),
+    h('h1.sr-only', t('do.focus')),
     root);
 }
 

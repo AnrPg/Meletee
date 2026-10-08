@@ -55,5 +55,6 @@ export function settings() {
       h('div.row',
         h('button.btn.soft.small', { onclick: () => download(`meletee-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(store.exportBackup(), null, 2)) }, t('settings.export')),
         h('button.btn.ghost.small', { onclick: () => file.click() }, t('settings.import')), file)),
+    h('a.settings-privacy', { href: '#/privacy' }, t('privacy.link')),
     h('p.muted.small', t('settings.about')));
 }

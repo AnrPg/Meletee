@@ -29,6 +29,18 @@ const hash = createHash('sha256');
   }
 })(out);
 const version = hash.digest('hex').slice(0, 10);
+// The service worker precaches the app shell: everything shipped except the compendium content
+// (cached section by section as it is read) and the worker itself.
+const shell = ['./'];
+(function list(dir, rel = '') {
+  for (const name of readdirSync(dir).sort()) {
+    const p = join(dir, name); const r = rel + name;
+    if (statSync(p).isDirectory()) { if (r !== 'content') list(p, r + '/'); }
+    else if (r !== 'sw.js') shell.push(r);
+  }
+})(out);
 const sw = join(out, 'sw.js');
-writeFileSync(sw, readFileSync(sw, 'utf8').replace("const VERSION = 'dev';", `const VERSION = '${version}';`));
-console.log(`built dist/site (version ${version})`);
+writeFileSync(sw, readFileSync(sw, 'utf8')
+  .replace("const VERSION = 'dev';", `const VERSION = '${version}';`)
+  .replace('const SHELL = [];', `const SHELL = ${JSON.stringify(shell)};`));
+console.log(`built dist/site (version ${version}, ${shell.length} files precached)`);

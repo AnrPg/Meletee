@@ -51,15 +51,16 @@ function firstCard() {
   return box;
 }
 
-export function registerBuddies(router) {
-  data.watchActivity();
-  router.route('/buddies', gate(buddiesHome));
-  router.route('/buddies/me', gate(cardView, { needCard: false }));
-  router.route('/buddies/invite', gate(inviteView));
-  router.route('/buddies/join/:code', gate(joinView, { needCard: false }));
-  router.route('/buddies/b/:id', gate(buddyView));
-  router.route('/buddies/room', gate(roomsView));
-  router.route('/buddies/room/:id', gate(roomView));
-  router.route('/buddies/goals', gate(goalsView));
-  router.route('/buddies/challenges', gate(challengesView));
-}
+// The routes (see ../index.js, which loads this module on first use). The buddies' live status
+// (data.watchActivity) starts in the background with the app when there is an account.
+export const views = {
+  home: gate(buddiesHome),
+  me: gate(cardView, { needCard: false }),
+  invite: gate(inviteView),
+  join: gate(joinView, { needCard: false }),
+  buddy: gate(buddyView),
+  rooms: gate(roomsView),
+  room: gate(roomView),
+  goals: gate(goalsView),
+  challenges: gate(challengesView),
+};

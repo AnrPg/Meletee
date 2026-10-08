@@ -6,6 +6,8 @@ import { lang } from './i18n.js';
 const cache = new Map();
 
 function load(path) {
+  const inline = globalThis.__meleteeFiles?.[`content/${path}`];
+  if (inline) return Promise.resolve(inline);
   if (!cache.has(path)) {
     cache.set(path, fetch(new URL(`../../content/${path}`, import.meta.url))
       .then((r) => { if (!r.ok) throw new Error(`content ${path}: ${r.status}`); return r.json(); })

@@ -9,14 +9,26 @@ import { systemFor, JSON_PROMPTS } from './prompts.js';
 import { validate, GRADE, gradeCheck, QUESTIONS, questionsCheck, ERRORS } from './schema.js';
 import { claudeCall, DEFAULT_CLAUDE } from './claude.js';
 import { geminiCall, DEFAULT_GEMINI } from './gemini.js';
-import { AIError } from './http.js';
+import { AIError, safeModel, isModelId } from './http.js';
 import * as convos from './convos.js';
 
 export { AIError, convos, TASKS };
 
 // ---------- settings (model choice and who answers; not secret, so they live in the store) ----------
-export const aiPrefs = () => ({ prefer: 'auto', claudeModel: DEFAULT_CLAUDE, geminiModel: DEFAULT_GEMINI, ...store.get('ai', {}) });
-export const setAiPrefs = (patch) => store.update('ai', (p) => ({ ...p, ...patch }), {});
+// Synced (and restorable from a backup), so every field is checked: model ids must be plain ids.
+export const aiPrefs = () => {
+  const raw = store.get('ai', {});
+  const p = { prefer: 'auto', claudeModel: DEFAULT_CLAUDE, geminiModel: DEFAULT_GEMINI, ...(raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}) };
+  if (!['auto', 'claude', 'gemini'].includes(p.prefer)) p.prefer = 'auto';
+  p.claudeModel = safeModel(p.claudeModel, DEFAULT_CLAUDE);
+  p.geminiModel = safeModel(p.geminiModel, DEFAULT_GEMINI);
+  for (const k of ['claudeModels', 'geminiModels']) if (k in p) p[k] = Array.isArray(p[k]) ? p[k].filter(isModelId).slice(0, 40) : [];
+  return p;
+};
+export const setAiPrefs = (patch) => {
+  for (const k of ['claudeModel', 'geminiModel']) if (k in patch && !isModelId(patch[k])) throw new Error('bad model id');
+  return store.update('ai', (p) => ({ ...p, ...patch }), {});
+};
 
 const online = () => (typeof navigator === 'undefined' || navigator.onLine !== false);
 

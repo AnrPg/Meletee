@@ -30,8 +30,8 @@ export function find() {
     const q = QUESTIONS[step];
     root.replaceChildren(h('div.stack-lg.view',
       h('div',
-        h('a.btn.ghost.small', { href: step ? undefined : '#/learn', style: { marginLeft: '-12px', marginBottom: '8px' },
-          onclick: step ? () => { step--; show(); } : null }, icon('back'), t('common.back')),
+        h(step ? 'button.btn.ghost.small' : 'a.btn.ghost.small', { href: step ? undefined : '#/learn', type: step ? 'button' : undefined,
+          style: { marginLeft: '-12px', marginBottom: '8px' }, onclick: step ? () => { step--; show(); } : null }, icon('back'), t('common.back')),
         h('p.eyebrow', t('find.step', { n: step + 1, total: QUESTIONS.length })),
         h('h1', t(`find.q.${q.id}`))),
       h('div.cards', q.options.map((o, i) => h('button.card', { onclick: () => { answers[q.id] = o; step++; show(); } },

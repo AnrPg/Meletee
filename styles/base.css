@@ -17,3 +17,11 @@ code{font-family:var(--mono);font-size:.86em;background:var(--bg2);border:1px so
 :focus-visible{outline:2px solid var(--c);outline-offset:3px;border-radius:8px}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 [hidden]{display:none!important}
+#main:focus{outline:none}
+.skip-link{position:absolute;left:var(--s3);top:-60px;z-index:100;padding:10px 16px;border-radius:var(--r-pill);background:var(--card);color:var(--ink);
+  font-weight:700;box-shadow:var(--shadow);text-decoration:none}
+.skip-link:focus{top:var(--s3)}
+/* Reduced motion: whatever a component animates, keep it still (end states stay the same). */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
+}

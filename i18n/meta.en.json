@@ -1,1 +1,27 @@
-{}
+{
+  "a11y.skip": "Skip to content",
+  "privacy.link": "🔒 Privacy: where your data goes",
+  "privacy.title": "Your privacy",
+  "privacy.lede": "Your study life is yours. Here is exactly what stays on this device and what goes anywhere else.",
+  "privacy.device.title": "On this device",
+  "privacy.device.text": "Everything you do in Meletee (courses, plans, focus sessions, cards, notes, reflections, your garden and saved AI conversations) is kept in this browser’s storage. Without an account, none of it leaves the device. There are no ads, trackers or analytics. The only outside request on a normal visit is the font, from Google Fonts.",
+  "privacy.cloud.title": "When you sign in",
+  "privacy.cloud.text": "Signing in is optional. With an account, Meletee keeps a copy of its own data in your account so it can follow you between devices: the Supabase table meletee_kv, plus restore points in meletee_snapshots (one a day, the newest 30 are kept, and any you save yourself). Your AI conversations are also saved to noema_conversations, so they show up in noema-lite. Row-level security means only you can read these rows. Never synced: your AI keys, a running timer and caches.",
+  "privacy.keys.title": "AI keys",
+  "privacy.keys.text": "Your Claude or Gemini key stays on this device: only in this tab, unless you choose to remember it here. It is never in a backup file and never in the cloud. Your browser sends it straight to Anthropic or Google, and only when you ask a tutor something, together with the text you asked about. Meletee has no server in between.",
+  "privacy.buddies.title": "What buddies see",
+  "privacy.buddies.text": "Only people you accepted with an invite code, and only what your buddy card shares: the name and emoji you pick and, if you switch them on, your forgiving streak, minutes this week, garden and whether you are focusing right now (by default only the streak). In goals you join together they also see your sessions, minutes and reviews for that week. Cheers are preset messages: no chat, no public directory.",
+  "privacy.noema.title": "noema-lite",
+  "privacy.noema.text": "One account works in both apps. Signed in, Meletee reads your noema-lite progress (read-only) to suggest what to study next, and for a course you imported from noema-lite it leaves what you studied here in noema-lite’s inbox. Subject packs are downloaded from the noema-lite website when you open them.",
+  "privacy.data.title": "Take it with you, or delete it",
+  "privacy.data.text": "Settings saves a backup file with everything Meletee keeps. You can also delete all of Meletee’s data from this browser, and, when signed in, Meletee’s copy in the cloud too. Your account itself is shared with noema-lite and stays.",
+  "privacy.backup": "Back up in Settings",
+  "privacy.wipe": "Delete from this device",
+  "privacy.wipeConfirm": "Delete everything here?",
+  "privacy.wipeText": "Courses, sessions, cards, notes, conversations and keys leave this browser for good. Save a backup first if you might want them back.",
+  "privacy.wipeCloud": "Delete here and in the cloud",
+  "privacy.wipeCloudConfirm": "Delete Meletee’s data everywhere?",
+  "privacy.wipeCloudText": "This removes Meletee’s synced data, restore points, buddy card and saved conversations from your account, then clears this browser and signs you out. Your noema-lite data is not touched.",
+  "privacy.wiped": "All cleared. A fresh start 🌱",
+  "privacy.failed": "That didn’t work: {msg}"
+}

@@ -15,7 +15,7 @@ export default async function mount(root, api) {
   let askSure = api.data('askSure', true);
 
   const tabs = () => h('div.seg', { role: 'tablist', 'aria-label': t('tabsLabel') }, ['practise', 'deck'].map((k) => h('button', {
-    type: 'button', role: 'tab', 'aria-selected': String(tab === k), 'aria-pressed': String(tab === k),
+    type: 'button', role: 'tab', 'aria-selected': String(tab === k),
     onclick: () => { tab = k; api.save('tab', k); draw(); },
   }, t(`tab.${k}`))));
 

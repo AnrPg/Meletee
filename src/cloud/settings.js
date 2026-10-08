@@ -76,7 +76,8 @@ function signInSheet() {
   });
   draw();
   close = sheet(form, { label: t('cloud.signIn') });
-  setTimeout(() => email.focus(), 50);
+  // Only if nothing in the form has focus yet: a late focus() must never steal typing from another field.
+  setTimeout(() => { if (!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) email.focus(); }, 50);
 }
 
 const when = (s) => new Intl.DateTimeFormat(lang(), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(s));

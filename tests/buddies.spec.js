@@ -22,38 +22,60 @@ function installBuddyModel() {
   const need = (me) => { if (!me) throw new Error('not signed in'); return me; };
   const roomOk = (db, me, id) => { const r = T(db, 'meletee_buddy_rooms').find((x) => x.id === id); return !!r && (r.owner === me || buddies(db, me, r.owner)); };
   const fresh = (m) => Date.now() - new Date(m.last_seen).getTime() < 90000;
-  const roomState = (db, id) => ({
+  const blockedPair = (db, a, b) => link(db, a, b)?.status === 'blocked';
+  const roomState = (db, id, me) => ({
     timer: T(db, 'meletee_buddy_rooms').find((x) => x.id === id).timer,
-    members: T(db, 'meletee_buddy_room_members').filter((m) => m.room_id === id && fresh(m)).map((m) => ({ id: m.user_id, ...who(db, m.user_id), status: m.status })),
+    members: T(db, 'meletee_buddy_room_members').filter((m) => m.room_id === id && fresh(m) && !blockedPair(db, me, m.user_id)).map((m) => ({ id: m.user_id, ...who(db, m.user_id), status: m.status })),
   });
+  // 30 code attempts an hour (meletee_buddy_code_try)
+  const codeTry = (db, me) => {
+    const tries = (db.tables.meletee_buddy_code_tries ||= []).filter((x) => x.user_id === me && Date.now() - x.at < 3600e3);
+    if (tries.length >= 30) return false;
+    db.tables.meletee_buddy_code_tries.push({ user_id: me, at: Date.now() });
+    return true;
+  };
   const addDays = (d, n) => { const x = new Date(d + 'T12:00:00'); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };
   let seq = 0;
   const uuid = () => `9${String(Date.now()).slice(-7)}-0000-4000-8000-${String(++seq).padStart(12, '0')}`;
 
   W.__fakeRpc = {
+    meletee_buddy_invite_create(db, a, me) {
+      need(me);
+      if (T(db, 'meletee_buddy_invites').filter((x) => x.user_id === me && !x.used_by).length >= 20) throw new Error('slow down: enough open invites');
+      const A = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+      const code = Array.from(crypto.getRandomValues(new Uint8Array(10)), (b) => A[b % 31]).join('');
+      T(db, 'meletee_buddy_invites').push({ code, user_id: me, created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 14 * 864e5).toISOString() });
+      return code;
+    },
     meletee_buddy_invite_preview(db, { p_code }, me) {
       need(me);
+      if (!codeTry(db, me)) return { status: 'slow' };
       const i = T(db, 'meletee_buddy_invites').find((x) => x.code === String(p_code).toUpperCase());
       if (!i) return { status: 'invalid' };
       if (link(db, me, i.user_id)?.status === 'blocked') return { status: 'invalid' };
       if (i.user_id === me) return { status: 'self' };
       if (buddies(db, me, i.user_id)) return { status: 'already', ...who(db, i.user_id) };
       if (i.used_by) return { status: 'used' };
+      T(db, 'meletee_buddy_invite_seen').push({ user_id: me, code: i.code });
       return { status: 'ok', ...who(db, i.user_id) };
     },
     meletee_buddy_accept_invite(db, { p_code }, me) {
       need(me);
       if (!prof(db, me)) throw new Error('make your buddy card first');
+      if (!codeTry(db, me)) return { status: 'slow' };
       const i = T(db, 'meletee_buddy_invites').find((x) => x.code === String(p_code).toUpperCase());
-      if (!i || i.user_id === me || i.used_by || link(db, me, i.user_id)?.status === 'blocked') throw new Error('invite not valid');
+      if (!i || i.user_id === me || i.used_by || link(db, me, i.user_id)?.status === 'blocked') return { status: 'invalid' };
       const [a, b] = pair(me, i.user_id);
       if (!link(db, me, i.user_id)) T(db, 'meletee_buddy_links').push({ user_a: a, user_b: b, status: 'accepted', blocked_by: null, created_at: new Date().toISOString() });
       Object.assign(i, { used_by: me, outcome: 'accepted' });
-      return { id: i.user_id };
+      return { status: 'ok', id: i.user_id };
     },
     meletee_buddy_decline_invite(db, { p_code }, me) {
-      const i = T(db, 'meletee_buddy_invites').find((x) => x.code === String(p_code).toUpperCase() && x.user_id !== need(me) && !x.used_by);
-      if (i) Object.assign(i, { used_by: me, outcome: 'declined' });
+      if (!codeTry(db, need(me))) throw new Error('slow down');
+      const code = String(p_code).toUpperCase();
+      const seen = T(db, 'meletee_buddy_invite_seen').some((s) => s.user_id === me && s.code === code);
+      const i = T(db, 'meletee_buddy_invites').find((x) => x.code === code && x.user_id !== me && !x.used_by);
+      if (i && seen) Object.assign(i, { used_by: me, outcome: 'declined' });
     },
     meletee_buddy_remove(db, { p_other }, me) {
       const [a, b] = pair(need(me), p_other);
@@ -81,20 +103,30 @@ function installBuddyModel() {
       if (!r) { r = { id: uuid(), owner: me, timer: {} }; T(db, 'meletee_buddy_rooms').push(r); }
       return r.id;
     },
-    meletee_buddy_room_state(db, { p_room }, me) { if (!roomOk(db, need(me), p_room)) throw new Error('room not available'); return roomState(db, p_room); },
+    meletee_buddy_room_state(db, { p_room }, me) { if (!roomOk(db, need(me), p_room)) throw new Error('room not available'); return roomState(db, p_room, me); },
     meletee_buddy_room_join(db, { p_room, p_status = 'here' }, me) {
       if (!roomOk(db, need(me), p_room)) throw new Error('room not available');
       const ms = T(db, 'meletee_buddy_room_members');
       const m = ms.find((x) => x.room_id === p_room && x.user_id === me);
       if (m) Object.assign(m, { status: p_status, last_seen: new Date().toISOString() });
       else ms.push({ room_id: p_room, user_id: me, status: p_status, last_seen: new Date().toISOString() });
-      return roomState(db, p_room);
+      return roomState(db, p_room, me);
     },
     meletee_buddy_room_leave(db, { p_room }, me) { db.tables.meletee_buddy_room_members = T(db, 'meletee_buddy_room_members').filter((m) => !(m.room_id === p_room && m.user_id === need(me))); },
     meletee_buddy_room_timer(db, { p_room, p_timer }, me) {
       if (!roomOk(db, need(me), p_room)) throw new Error('room not available');
       const r = T(db, 'meletee_buddy_rooms').find((x) => x.id === p_room);
-      if ((r.timer?.v || 0) <= (p_timer.v || 0)) r.timer = { ...p_timer, by: me };
+      // the checks of the SQL function: v not in the future, 1-120 whole minutes, 0-60 rest, started about now
+      const now = Date.now(), tm = p_timer || {}, num = (x) => typeof x === 'number' && Number.isFinite(x);
+      if (!['focus', 'idle'].includes(tm.phase) || !num(tm.v) || tm.v < 0 || tm.v > now + 60000) throw new Error('bad timer');
+      let clean = { phase: 'idle', v: tm.v, by: me };
+      if (tm.phase === 'focus') {
+        const rest = tm.rest ?? 0;
+        if (!Number.isInteger(tm.minutes) || tm.minutes < 1 || tm.minutes > 120 || !num(rest) || rest < 0 || rest > 60 || !num(tm.startedAt) || Math.abs(tm.startedAt - now) > 120000) throw new Error('bad timer');
+        clean = { phase: 'focus', minutes: tm.minutes, rest, startedAt: tm.startedAt, endsAt: tm.startedAt + tm.minutes * 60000, v: tm.v, by: me };
+      }
+      const cur = r.timer?.v;
+      if (!num(cur) || cur <= tm.v || cur > now + 60000) r.timer = clean;
     },
     meletee_buddy_goal_create(db, { p_kind, p_metric, p_target, p_week }, me) {
       need(me);
@@ -130,10 +162,15 @@ function installBuddyModel() {
         goals: T(db, 'meletee_buddy_goals').filter((g) => [p_week, addDays(p_week, -7)].includes(g.week)
           && (g.owner === me || buddies(db, me, g.owner) || T(db, 'meletee_buddy_goal_members').some((m) => m.goal_id === g.id && m.user_id === me))
           && (g.kind !== 'challenge' || compete))
-          .map((g) => ({ ...g, joined: T(db, 'meletee_buddy_goal_members').some((m) => m.goal_id === g.id && m.user_id === me),
-            members: T(db, 'meletee_buddy_goal_members').filter((m) => m.goal_id === g.id).map((m) => ({ id: m.user_id, ...who(db, m.user_id), value: contrib(m.user_id, g.week, g.metric) })) })),
+          .map((g) => {
+            const joined = T(db, 'meletee_buddy_goal_members').some((m) => m.goal_id === g.id && m.user_id === me);
+            // numbers only for members of the goal (challenges: an opt-in board by design); before joining, only my buddies are listed
+            return { ...g, joined,
+              members: T(db, 'meletee_buddy_goal_members').filter((m) => m.goal_id === g.id && (joined || m.user_id === me || buddies(db, me, m.user_id)) && !blockedPair(db, me, m.user_id))
+                .map((m) => ({ id: m.user_id, ...who(db, m.user_id), value: joined || g.kind === 'challenge' ? contrib(m.user_id, g.week, g.metric) : null })) };
+          }),
         rooms: T(db, 'meletee_buddy_rooms').filter((r) => r.owner === me || buddies(db, me, r.owner))
-          .map((r) => ({ id: r.id, owner: r.owner, ...who(db, r.owner), timer: r.timer, members: roomState(db, r.id).members })),
+          .map((r) => ({ id: r.id, owner: r.owner, ...who(db, r.owner), timer: r.timer, members: roomState(db, r.id, me).members })),
       };
     },
   };
@@ -223,7 +260,7 @@ test('invite → accept → cheer → shared goal → challenge', async ({ page 
   await page.getByRole('link', { name: /Invite a buddy/ }).click();
   await page.getByRole('button', { name: /Create an invite link/ }).click();
   const code = (await page.locator('.bud-code').textContent()).trim();
-  expect(code).toMatch(/^[A-HJKMNP-Z2-9]{8}$/);
+  expect(code).toMatch(/^[A-HJKMNP-Z2-9]{10}$/); // made by the server (meletee_buddy_invite_create)
   await expect(page.getByLabel('Invite link')).toHaveValue(new RegExp(`#/buddies/join/${code}$`));
   d = await db(page);
   expect(d.tables.meletee_buddy_invites.some((i) => i.code === code && i.user_id === ME)).toBe(true);
@@ -362,11 +399,15 @@ async function fakeRealtime(page, sent) {
 test('focus room: live presence and a synced Pomodoro over the Realtime socket', async ({ page }) => {
   const sent = [];
   const rt = await fakeRealtime(page, sent);
+  const MY_ROOM = 'aaaaaaaa-0000-4000-8000-0000000000aa';
   const { errors, real } = await open(page, '#/buddies/room', {
     ws: 'fake',
     seed: { tables: {
       meletee_buddy_profiles: [profile(ME, 'Ada', '🦉'), profile(BO, 'Bo', '🐼')],
       meletee_buddy_links: [friends(ME, BO)],
+      // Bo is already in my room (the database lists him; live presence alone is not enough to be shown)
+      meletee_buddy_rooms: [{ id: MY_ROOM, owner: ME, timer: {} }],
+      meletee_buddy_room_members: [{ room_id: MY_ROOM, user_id: BO, status: 'here', last_seen: new Date(Date.now() + 60000).toISOString() }],
     } },
   });
   await page.getByRole('button', { name: /Open my room/ }).click();
@@ -397,7 +438,12 @@ test('focus room: live presence and a synced Pomodoro over the Realtime socket',
   // Bo starts a 50-minute block
   rt.send({ topic, event: 'broadcast', payload: { type: 'broadcast', event: 'timer', payload: { phase: 'focus', minutes: 50, rest: 10, startedAt: Date.now(), endsAt: Date.now() + 50 * 60000, by: BO, v: Date.now() + 2000 } } });
   await expect(page.locator('.ring-time')).toHaveText(/^(50:00|49:5\d)$/);
-  // Bo leaves
+  // a hostile timer (a week of minutes, a far-future v) is ignored
+  rt.send({ topic, event: 'broadcast', payload: { type: 'broadcast', event: 'timer', payload: { phase: 'focus', minutes: 100000, rest: 0, startedAt: Date.now(), endsAt: Date.now() + 1000, by: BO, v: 1e300 } } });
+  await page.waitForTimeout(300);
+  await expect(page.locator('.ring-time')).toHaveText(/^(50:00|49:[45]\d)$/);
+  // Bo leaves (his app leaves the room, then the socket says so)
+  await as(page, BO, 'meletee_buddy_room_leave', { p_room: MY_ROOM });
   rt.send({ topic, event: 'presence_diff', payload: { joins: {}, leaves: { [BO]: { metas: [{ phx_ref: 'b1' }] } } } });
   await expect(people).toHaveCount(1);
   await noScroll(page);

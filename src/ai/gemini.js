@@ -1,7 +1,7 @@
 // Gemini through the Generative Language API, as noema-lite's geminiCall: x-goog-api-key,
 // generateContent (JSON mode for structured jobs) and streamGenerateContent?alt=sse for chat.
 import { sseParser, geminiText } from './sse.js';
-import { AIError, wait, backoff, transient, MAX_RETRIES, kindOf } from './http.js';
+import { AIError, wait, backoff, transient, MAX_RETRIES, kindOf, safeModel, isModelId } from './http.js';
 
 export const DEFAULT_GEMINI = 'gemini-flash-latest';
 const base = () => (window.MELETEE_CONFIG?.geminiBase || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/, '');
@@ -20,6 +20,7 @@ function thinkingFor(model) {
  */
 export async function geminiCall({ key, model = DEFAULT_GEMINI, system, contents, json = false, maxTokens = 8192, signal, onText }) {
   if (!key) throw new AIError('No Gemini key on this device.', 'nokey', 401);
+  model = safeModel(model, DEFAULT_GEMINI); // it goes into the URL path: never anything but a plain model id
   const stream = !!onText && !json;
   for (let attempt = 0; ; attempt++) {
     const gc = { maxOutputTokens: maxTokens, temperature: json ? 0.4 : 0.7 };
@@ -99,6 +100,6 @@ export async function geminiModels(key) {
   }
   const d = await r.json();
   return (d.models || []).filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
-    .map((m) => m.name.replace(/^models\//, '')).filter((n) => modelScore(n) >= 0)
+    .map((m) => String(m.name || '').replace(/^models\//, '')).filter((n) => isModelId(n) && modelScore(n) >= 0)
     .sort((a, b) => modelScore(b) - modelScore(a));
 }

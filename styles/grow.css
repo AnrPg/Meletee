@@ -60,7 +60,7 @@
 .scale .taps{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--s2)}
 .tap{min-height:44px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--card);font-weight:750;font-size:16px;color:var(--ink2);transition:all var(--t1) var(--ease)}
 .tap:hover{border-color:var(--c)}
-.tap[aria-pressed="true"]{background:var(--c);border-color:transparent;color:#fff;transform:scale(1.04)}
+.tap[aria-pressed="true"]{background:var(--c);border-color:transparent;color:var(--on-c);transform:scale(1.04)}
 .scale .ends{display:flex;justify-content:space-between;font-size:12px;margin-top:4px}
 
 /* lab */
@@ -85,7 +85,7 @@
 .grow-details[open] summary{margin-bottom:var(--s2)}
 .how{padding-left:1.3em;margin:0;color:var(--ink2)}
 .how li{margin:6px 0}
-.grow-danger{color:var(--bad)}
+.grow-danger{color:var(--bad-ink)}
 .profile-row{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s3);padding:10px 0}
 .profile-row>div{min-width:0;overflow-wrap:anywhere}
 .nowrap{white-space:nowrap}

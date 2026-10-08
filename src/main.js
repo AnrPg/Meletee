@@ -3,7 +3,7 @@ import * as i18n from './core/i18n.js';
 import * as router from './core/router.js';
 import * as store from './core/store.js';
 import { icon, logo } from './ui/art.js';
-import { registerViews, NAV } from './views/index.js';
+import { registerViews, NAV, startBackground } from './views/index.js';
 import { openParking } from './ui/parking.js';
 
 export function applyTheme(theme = store.get('settings', {}).theme || 'auto') {
@@ -21,7 +21,8 @@ function shell() {
     h('div.spacer'),
     h('button.icon-btn', { 'aria-label': t('parking.title'), title: t('parking.title'), onclick: openParking }, icon('park')),
     h('a.icon-btn', { href: '#/settings', 'aria-label': t('nav.settings'), title: t('nav.settings') }, icon('settings')));
-  document.getElementById('app').replaceChildren(h('div.app', top, main, nav));
+  const skip = h('a.skip-link', { href: '#main', onclick: (e) => { e.preventDefault(); main.focus(); } }, t('a11y.skip'));
+  document.getElementById('app').replaceChildren(h('div.app', skip, top, main, nav));
   return { main, nav };
 }
 
@@ -44,9 +45,18 @@ async function render(m) {
     console.error(e);
     node.replaceChildren(h('p.muted', i18n.t('error.generic')));
   }
+  if (!node.isConnected) return; // a newer navigation already replaced this screen
   if (m?.pattern !== undefined) window.scrollTo({ top: 0 });
-  document.title = `${i18n.t('app.name')}`;
+  const heading = node.querySelector('h1')?.textContent.trim();
+  document.title = heading && path !== '/' ? `${heading} · ${i18n.t('app.name')}` : i18n.t('app.name');
+  // After a navigation, keyboard and screen-reader users start at the new screen's content
+  // (unless the screen already put focus somewhere on purpose).
+  const a = document.activeElement;
+  if (rendered && (!a || a === document.body || els.nav.contains(a) || !a.isConnected)) els.main.focus({ preventScroll: true });
+  rendered = true;
 }
+
+let rendered = false;
 
 export function rebuild() {
   els = shell();
@@ -59,6 +69,7 @@ async function boot() {
   registerViews(router);
   els = shell();
   router.start(render);
+  setTimeout(() => startBackground().catch((e) => console.warn('[background]', e)), 0);
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   }

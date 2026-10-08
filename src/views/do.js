@@ -38,7 +38,7 @@ export function doView() {
 
     exam && exam.days <= 14 ? h('a.card.exam', { href: `#/do/course/${exam.course.id}` },
       h('p.eyebrow', t('do.examMode')),
-      h('h3', tn('do.examIn', exam.days, { course: exam.course.name }))) : null,
+      h('h3', exam.days <= 0 ? t('do.examToday', { course: exam.course.name }) : tn('do.examIn', exam.days, { course: exam.course.name }))) : null,
 
     h('a.card.focus-card', { href: '#/do/focus' },
       h('div.row', { style: { justifyContent: 'space-between' } },

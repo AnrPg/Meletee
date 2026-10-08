@@ -42,7 +42,7 @@
 .bud-more summary::-webkit-details-marker{display:none}
 .bud-more[open] summary{margin-bottom:var(--s2)}
 .bud-more .stack{align-items:center;display:flex;flex-direction:column}
-.btn.bud-danger{color:var(--bad)}
+.btn.bud-danger{color:var(--bad-ink)}
 
 /* card form */
 .bud-card-top{flex-wrap:nowrap;align-items:flex-end}
@@ -90,7 +90,7 @@
 .bud-member .bud-avatar{width:32px;height:32px;font-size:18px}
 .bud-member .muted{white-space:nowrap}
 .bud-total{font-size:15px}
-.bud-yay{font-weight:700;color:var(--leaf)}
+.bud-yay{font-weight:700;color:var(--leaf-ink)}
 .bud-join{gap:var(--s3)}
 .bud-board{display:flex;flex-direction:column;gap:var(--s2)}
 .bud-crown{width:22px;text-align:center;flex:none}

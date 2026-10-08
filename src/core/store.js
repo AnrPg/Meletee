@@ -56,9 +56,29 @@ export function exportBackup() {
   return { format: BACKUP_FORMAT, version: 1, account: account(), exportedAt: new Date().toISOString(), data };
 }
 
+// What a restored backup may write: only the account data the app itself keeps under `a:` (the names below,
+// plus the grow:* and per-workspace ws:<id>:* families). Never meta:*, cache:* (e.g. the noema-lite outbox,
+// which would be forwarded to noema-lite), a:cache.*, the device-only timer, or anything else a crafted file
+// adds. Add new store names here when a feature introduces one.
+export const RESTORABLE = Object.freeze(['ai', 'blocks', 'buddies:logged', 'courses', 'method', 'parking', 'profile', 'recalls', 'sessions', 'settings', 'today', 'ui']);
+const RESTORABLE_FAMILY = /^(grow:[a-z][a-zA-Z0-9_-]{0,40}|ws:[a-zA-Z0-9_-]{1,60}:[a-zA-Z0-9_.:-]{1,80})$/;
+export const MAX_VALUE = 1000000; // the same cap as meletee_kv.value (cloud/supabase.sql)
+
+export function restorable(key) {
+  if (typeof key !== 'string' || !key.startsWith('a:')) return false;
+  const name = key.slice(2);
+  return RESTORABLE.includes(name) || RESTORABLE_FAMILY.test(name);
+}
+
 export function importBackup(obj) {
-  if (!obj || obj.format !== BACKUP_FORMAT || typeof obj.data !== 'object') throw new Error('not a meletee backup');
+  if (!obj || obj.format !== BACKUP_FORMAT || !obj.data || typeof obj.data !== 'object' || Array.isArray(obj.data)) throw new Error('not a meletee backup');
   const prefix = `${PREFIX}${account()}:`;
-  for (const [k, v] of Object.entries(obj.data)) if (typeof v === 'string') setItem(prefix + k, v);
-  return Object.keys(obj.data).length;
+  let n = 0;
+  for (const [k, v] of Object.entries(obj.data)) {
+    if (!restorable(k) || typeof v !== 'string' || v.length > MAX_VALUE) continue;
+    try { JSON.parse(v); } catch { continue; }
+    setItem(prefix + k, v);
+    n++;
+  }
+  return n;
 }

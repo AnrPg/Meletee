@@ -113,16 +113,12 @@ export const CHEERS = Object.freeze({
 export const isPreset = (kind, key) => !!CHEERS[kind]?.includes(key);
 
 // ---------- invite codes ----------
-// 8 characters without look-alikes (no 0/O, 1/I/L). 32^8 ≈ 10^12 codes; each works once, for 14 days.
+// Codes are made by the server (meletee_buddy_invite_create): 10 characters from a 31-letter alphabet
+// without look-alikes (no 0/O, 1/I/L), so 31^10 ≈ 8.2·10^14 codes; each works once, for 14 days, and every
+// account may try at most 30 codes an hour. Older invites have 8 characters (31^8 ≈ 8.5·10^11), still accepted.
 export const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-export const CODE_LENGTH = 8;
-
-export function newCode(random = (n) => crypto.getRandomValues(new Uint8Array(n))) {
-  const bytes = random(CODE_LENGTH);
-  let s = '';
-  for (let i = 0; i < CODE_LENGTH; i++) s += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length];
-  return s;
-}
+export const CODE_LENGTH = 10;
+export const CODE_LENGTHS = [8, 10];
 
 // A code from whatever was pasted: the code itself (any case, with spaces or dashes) or an invite link.
 export function parseCode(input) {
@@ -130,7 +126,7 @@ export function parseCode(input) {
   const m = s.match(/buddies\/join\/([^/?#\s]+)/i);
   if (m) s = decodeURIComponent(m[1]);
   s = s.toUpperCase().replace(/[\s-]/g, '');
-  return s.length === CODE_LENGTH && [...s].every((c) => CODE_ALPHABET.includes(c)) ? s : null;
+  return CODE_LENGTHS.includes(s.length) && [...s].every((c) => CODE_ALPHABET.includes(c)) ? s : null;
 }
 
 export const inviteLink = (code, base) => `${String(base).replace(/#.*$/, '')}#/buddies/join/${code}`;
@@ -155,6 +151,33 @@ export function timerView(tm, now = Date.now()) {
 
 // The newer of two timer records (each carries v = when it was set).
 export const newerTimer = (a, b) => (!a ? b || null : !b ? a : (b.v || 0) > (a.v || 0) ? b : a);
+
+// A timer from the network (another member's broadcast, the database): only well-formed, plausible values
+// pass, rebuilt from scratch (no extra fields, endsAt always derived). The same rules as the SQL function
+// meletee_buddy_room_timer. null = ignore it.
+export const ROOM_LIMITS = Object.freeze({ minutes: 120, rest: 60, skewMs: 60000 });
+export function cleanTimer(tm, now = Date.now()) {
+  if (!tm || typeof tm !== 'object' || Array.isArray(tm)) return null;
+  const v = tm.v;
+  if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > now + ROOM_LIMITS.skewMs) return null;
+  const by = typeof tm.by === 'string' && tm.by.length <= 64 ? { by: tm.by } : {};
+  if (tm.phase === 'idle') return { phase: 'idle', ...by, v };
+  if (tm.phase !== 'focus') return null;
+  const { minutes, startedAt } = tm;
+  const rest = tm.rest == null ? 0 : tm.rest;
+  if (!Number.isInteger(minutes) || minutes < 1 || minutes > ROOM_LIMITS.minutes) return null;
+  if (typeof rest !== 'number' || !Number.isFinite(rest) || rest < 0 || rest > ROOM_LIMITS.rest) return null;
+  if (typeof startedAt !== 'number' || !Number.isFinite(startedAt) || startedAt < 0 || startedAt > now + ROOM_LIMITS.skewMs) return null;
+  return { phase: 'focus', minutes, rest, startedAt, endsAt: startedAt + minutes * 60000, ...by, v };
+}
+
+// Minutes of a shared focus block to log for me: only the time I was actually in the room during it,
+// never more than the block itself.
+export function roomMinutes(tm, presentMs) {
+  if (!tm || tm.phase !== 'focus' || !Number.isInteger(tm.minutes)) return 0;
+  const n = Math.round((Number(presentMs) || 0) / 60000);
+  return Math.max(0, Math.min(tm.minutes, ROOM_LIMITS.minutes, n));
+}
 
 // ---------- presence ----------
 // Phoenix presence state: { key: { metas: [{ phx_ref, ...meta }] } }; diffs carry joins and leaves.

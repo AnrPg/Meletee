@@ -14,8 +14,8 @@
 .ws-c-done{padding:var(--s5) 0}
 .ws-c-done>*+*{margin-top:var(--s3)}
 .ws-c-back{margin-left:-12px;align-self:flex-start}
-.btn.ws-c-danger{color:var(--bad)}
-.btn.ws-c-danger:hover{background:var(--bad-bg);color:var(--bad)}
+.btn.ws-c-danger{color:var(--bad-ink)}
+.btn.ws-c-danger:hover{background:var(--bad-bg);color:var(--bad-ink)}
 .ws-c-empty{padding:var(--s5) 0}
 .ws-c-empty>p:last-child{max-width:24rem;margin:0}
 .ws-c-meta{margin:6px 0 0}
@@ -45,7 +45,7 @@
 .ws-c-details .plain li:last-child{border-bottom:none}
 
 .ws-c-x{width:28px;height:28px;flex:none;border-radius:50%;color:var(--ink3);font-size:13px}
-.ws-c-x:hover{background:var(--bg2);color:var(--bad)}
+.ws-c-x:hover{background:var(--bg2);color:var(--bad-ink)}
 
 /* ---------- practice ---------- */
 .ws-practice-topics{display:flex;flex-direction:column;gap:var(--s4)}
@@ -117,7 +117,7 @@
 .ws-memory-letters-sm>span:not(.muted){width:30px;height:30px;font-size:15px;border-radius:9px}
 .ws-memory-loci{display:flex;flex-direction:column;gap:var(--s2)}
 .ws-memory-loci .ws-memory-locus{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3) 0}
-.ws-memory-num{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--leaf-bg);color:var(--leaf);font-weight:800;font-size:14px}
+.ws-memory-num{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--leaf-bg);color:var(--leaf-ink);font-weight:800;font-size:14px}
 .ws-memory-walk{padding:var(--s6) var(--s5)}
 .ws-memory-walk>*+*{margin-top:var(--s3)}
 .ws-memory-walk h2{font-size:24px}

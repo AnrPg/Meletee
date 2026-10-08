@@ -1,16 +1,19 @@
 {
   "name": "meletee",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "A calm, playful study-habits companion that works alongside noema-lite.",
   "type": "module",
   "scripts": {
     "content": "node tools/build-content.mjs",
     "build": "node tools/build.mjs",
+    "build:single": "node tools/build-single.mjs",
+    "icons": "node tools/icons.mjs",
     "serve": "node tools/serve.mjs",
     "test": "node --test tests/*.test.mjs && playwright test"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "1.56.1"
   }
 }

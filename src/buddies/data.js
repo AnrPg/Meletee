@@ -115,18 +115,22 @@ export async function overview({ fresh = true } = {}) {
 }
 
 // ---------- invites ----------
+// Codes are made by the server (random, capped per person); the client only reads and deletes its own invites.
 export async function createInvite() {
-  for (let i = 0; i < 3; i++) {
-    const code = L.newCode();
-    try {
-      await backend().insert(INVITES, [{ code, user_id: me().id }]);
-      return code;
-    } catch (e) { if (i === 2 || !/duplicate|conflict|409/i.test(e.message + (e.status || ''))) throw e; }
-  }
-  return null;
+  const code = await rpc('meletee_buddy_invite_create', {});
+  const c = L.parseCode(code);
+  if (!c) throw new Error('no invite code');
+  return c;
 }
+// { status: 'ok'|'already'|'self'|'used'|'expired'|'invalid'|'slow', name?, emoji? } (30 code attempts an hour)
 export const previewInvite = (code) => rpc('meletee_buddy_invite_preview', { p_code: code });
-export async function acceptInvite(code) { const r = await rpc('meletee_buddy_accept_invite', { p_code: code }); invalidate(); return r; }
+export async function acceptInvite(code) {
+  const r = await rpc('meletee_buddy_accept_invite', { p_code: code });
+  if (!r?.id) { const e = new Error(r?.status === 'slow' ? 'slow down' : 'invite not valid'); e.status = r?.status || 'invalid'; throw e; }
+  invalidate();
+  return r;
+}
+// Only after a successful preview of the same code (the server checks it).
 export async function declineInvite(code) { await rpc('meletee_buddy_decline_invite', { p_code: code }); }
 
 // ---------- buddies ----------

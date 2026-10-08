@@ -1,1 +1,27 @@
-{}
+{
+  "a11y.skip": "Aller au contenu",
+  "privacy.link": "🔒 Confidentialité : où vont tes données",
+  "privacy.title": "Ta vie privée",
+  "privacy.lede": "Tes études n’appartiennent qu’à toi. Voici exactement ce qui reste sur cet appareil et ce qui va ailleurs.",
+  "privacy.device.title": "Sur cet appareil",
+  "privacy.device.text": "Tout ce que tu fais dans Meletee (cours, plannings, sessions de concentration, cartes, notes, bilans, ton jardin et les conversations IA enregistrées) est conservé dans le stockage de ce navigateur. Sans compte, rien ne quitte l’appareil. Pas de publicité, pas de traceurs, pas de statistiques. La seule requête extérieure lors d’une visite normale est la police de caractères, chargée depuis Google Fonts.",
+  "privacy.cloud.title": "Quand tu te connectes",
+  "privacy.cloud.text": "Se connecter est facultatif. Avec un compte, Meletee garde une copie de ses propres données dans ton compte pour te suivre d’un appareil à l’autre : la table Supabase meletee_kv, plus des points de restauration dans meletee_snapshots (un par jour, les 30 plus récents sont gardés, plus ceux que tu enregistres toi-même). Tes conversations IA sont aussi enregistrées dans noema_conversations, pour apparaître dans noema-lite. La sécurité au niveau des lignes fait que toi seul peux lire ces lignes. Jamais synchronisés : tes clés IA, un minuteur en cours et les caches.",
+  "privacy.keys.title": "Clés IA",
+  "privacy.keys.text": "Ta clé Claude ou Gemini reste sur cet appareil : seulement dans cet onglet, sauf si tu choisis de la mémoriser ici. Elle n’est jamais dans un fichier de sauvegarde ni dans le cloud. Ton navigateur l’envoie directement à Anthropic ou à Google, et seulement quand tu poses une question à un tuteur, avec le texte concerné. Meletee n’a aucun serveur entre les deux.",
+  "privacy.buddies.title": "Ce que voient tes binômes",
+  "privacy.buddies.text": "Seulement les personnes acceptées avec un code d’invitation, et seulement ce que ta carte partage : le nom et l’emoji que tu choisis et, si tu les actives, ta série bienveillante, tes minutes de la semaine, ton jardin et si tu es en pleine concentration (par défaut, seulement la série). Dans les objectifs que vous rejoignez ensemble, ils voient aussi tes sessions, minutes et révisions de la semaine. Les encouragements sont des messages tout faits : pas de discussion, pas d’annuaire public.",
+  "privacy.noema.title": "noema-lite",
+  "privacy.noema.text": "Un seul compte fonctionne dans les deux applis. Connecté, Meletee lit ta progression dans noema-lite (en lecture seule) pour te suggérer quoi étudier ensuite et, pour un cours importé de noema-lite, dépose ce que tu as étudié ici dans la boîte de réception de noema-lite. Les packs de matières sont téléchargés depuis le site de noema-lite quand tu les ouvres.",
+  "privacy.data.title": "Emporte-les ou supprime-les",
+  "privacy.data.text": "Les réglages enregistrent un fichier de sauvegarde avec tout ce que garde Meletee. Tu peux aussi supprimer toutes les données de Meletee de ce navigateur et, connecté, la copie de Meletee dans le cloud. Ton compte lui-même est partagé avec noema-lite et reste.",
+  "privacy.backup": "Sauvegarder dans les réglages",
+  "privacy.wipe": "Supprimer de cet appareil",
+  "privacy.wipeConfirm": "Tout supprimer ici ?",
+  "privacy.wipeText": "Cours, sessions, cartes, notes, conversations et clés quittent ce navigateur pour de bon. Fais d’abord une sauvegarde si tu risques d’en avoir besoin.",
+  "privacy.wipeCloud": "Supprimer ici et dans le cloud",
+  "privacy.wipeCloudConfirm": "Supprimer partout les données de Meletee ?",
+  "privacy.wipeCloudText": "Cela retire de ton compte les données synchronisées de Meletee, les points de restauration, ta carte de binôme et les conversations enregistrées, puis vide ce navigateur et te déconnecte. Tes données noema-lite ne sont pas touchées.",
+  "privacy.wiped": "Tout est effacé. Un nouveau départ 🌱",
+  "privacy.failed": "Ça n’a pas marché : {msg}"
+}

@@ -7,7 +7,7 @@ import { sseParser, claudeReducer, geminiText } from '../src/ai/sse.js';
 import { check, parseJSON, validate, GRADE, gradeCheck, QUESTIONS, questionsCheck } from '../src/ai/schema.js';
 import { normalize, newId, SCHEMA } from '../src/ai/convos.js';
 import { groundRules, contextText, systemFor } from '../src/ai/prompts.js';
-import { backoff, transient } from '../src/ai/http.js';
+import { backoff, transient, MODEL_ID, isModelId, safeModel } from '../src/ai/http.js';
 
 test('router: each task goes to its provider, falls back, or to nobody', () => {
   const both = { claude: true, gemini: true };
@@ -151,4 +151,40 @@ test('retries: backoff honours Retry-After and caps', () => {
   assert.equal(backoff(0, '7'), 7000);
   assert.equal(backoff(0, '900'), 60000);
   assert.ok(transient(429) && transient(529) && transient(503) && !transient(400));
+});
+
+test('model ids: plain vendor ids only (the Gemini one goes into the request path)', () => {
+  for (const m of ['gemini-flash-latest', 'gemini-2.5-pro', 'gemini-3-flash-preview', 'claude-opus-4-1-20250805', 'claude-sonnet-4-5', 'GEMINI-1.5-FLASH'])
+    assert.equal(isModelId(m), true, m);
+  for (const m of ['../../v1beta/cachedContents', 'gemini/../../x', 'gemini-pro:generateContent', 'gemini-pro?key=x', 'gemini pro', 'gemini%2F..', '-gemini',
+    '.hidden', 'a..b', '', 'x'.repeat(81), null, undefined, 42, ['gemini-pro'], 'gemini-pro#x', 'gémini'])
+    assert.equal(isModelId(m), false, String(m));
+  assert.equal(MODEL_ID.test('../x'), false);
+  assert.equal(safeModel('../../v1beta/cachedContents', 'gemini-flash-latest'), 'gemini-flash-latest');
+  assert.equal(safeModel('gemini-2.5-pro', 'gemini-flash-latest'), 'gemini-2.5-pro');
+});
+
+test('model ids: a crafted synced or restored a:ai never reaches the Gemini URL', async () => {
+  const mem = new Map();
+  globalThis.window ||= globalThis;
+  globalThis.localStorage ||= { get length() { return mem.size; }, key: (i) => [...mem.keys()][i] ?? null, getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) };
+  const store = await import('../src/core/store.js');
+  const { aiPrefs, setAiPrefs } = await import('../src/ai/index.js');
+  const { geminiCall, DEFAULT_GEMINI } = await import('../src/ai/gemini.js');
+  store.set('ai', { prefer: 'evil', geminiModel: '../../v1beta/cachedContents', claudeModel: 'x y', geminiModels: ['gemini-2.5-pro', '../x'] });
+  const p = aiPrefs();
+  assert.equal(p.geminiModel, DEFAULT_GEMINI);
+  assert.equal(p.prefer, 'auto');
+  assert.match(p.claudeModel, /^claude-/);
+  assert.deepEqual(p.geminiModels, ['gemini-2.5-pro']);
+  assert.throws(() => setAiPrefs({ geminiModel: 'a/b' }), /bad model id/);
+  // and geminiCall itself refuses to put it in the path
+  const urls = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (u) => { urls.push(String(u)); return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'ok' }] }, finishReason: 'STOP' }] }), { status: 200, headers: { 'content-type': 'application/json' } }); };
+  try { await geminiCall({ key: 'k', model: '../../v1beta/cachedContents', system: 's', contents: [{ role: 'user', parts: [{ text: 'hi' }] }], json: true }); }
+  finally { globalThis.fetch = realFetch; }
+  assert.equal(urls.length, 1);
+  assert.match(urls[0], new RegExp(`/models/${DEFAULT_GEMINI}:generateContent$`));
+  store.remove('ai');
 });

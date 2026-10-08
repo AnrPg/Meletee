@@ -106,7 +106,7 @@ export function inviteView() {
           navigator.share ? h('button.btn.ghost.small', { onclick: () => navigator.share({ title: t('buddies.invite.shareTitle'), text: t('buddies.invite.shareText'), url: link }).catch(() => {}) }, '📤 ', t('buddies.invite.share')) : null),
         h('p.muted.small', t('buddies.invite.once'))));
       make.remove();
-    } catch (e) { toast(t('buddies.failed')); make.disabled = false; }
+    } catch (e) { toast(/slow down/i.test(e?.message || '') ? t('buddies.cheer.slow') : t('buddies.failed')); make.disabled = false; }
   } }, '✉️ ', t('buddies.invite.create'));
 
   const codeIn = h('input.field', { id: 'bud-code-in', type: 'text', autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false', placeholder: 'ABCD 2345' });
@@ -140,6 +140,7 @@ export async function joinView({ code: raw }, node, card) {
   }
   const p = await data.previewInvite(code);
   const st = p?.status || 'invalid';
+  if (st === 'slow') return shell(h('div.empty', h('p', '🌙'), h('h2', t('buddies.cheer.slow'))));
   if (st === 'already') return shell(h('div.empty', h('p', p.emoji || '🤝'), h('h2', t('buddies.join.already', { name: p.name })), h('a.btn.soft.small', { href: '#/buddies' }, t('nav.buddies'))));
   if (st !== 'ok') {
     const emoji = { self: '🪞', used: '🎟️', expired: '⌛' }[st] || '🔍';
@@ -153,7 +154,7 @@ export async function joinView({ code: raw }, node, card) {
       const r = await data.acceptInvite(code);
       toast(t('buddies.join.welcome', { name: p.name }));
       router.go(r?.id ? '/buddies/b/' + r.id : '/buddies');
-    } catch { toast(t('buddies.failed')); accept.disabled = false; }
+    } catch (e) { toast(e?.status === 'slow' ? t('buddies.cheer.slow') : e?.status === 'invalid' ? t('buddies.join.invalid') : t('buddies.failed')); accept.disabled = false; }
   } }, '🤝 ', t('buddies.join.accept'));
   return shell(h('section.hero.bud-hero',
     avatar(p.emoji, { big: true }),
@@ -163,6 +164,6 @@ export async function joinView({ code: raw }, node, card) {
       accept,
       h('button.btn.ghost.small', { onclick: async () => {
         if (!(await confirmSheet({ title: t('buddies.join.declineTitle'), text: t('buddies.join.declineText'), ok: t('buddies.join.decline') }))) return;
-        try { await data.declineInvite(code); toast(t('buddies.join.declined')); router.go('/buddies'); } catch { toast(t('buddies.failed')); }
+        try { await data.declineInvite(code); toast(t('buddies.join.declined')); router.go('/buddies'); } catch (e) { toast(/slow down/i.test(e?.message || '') ? t('buddies.cheer.slow') : t('buddies.failed')); }
       } }, t('buddies.join.decline')))));
 }

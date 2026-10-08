@@ -1,10 +1,25 @@
 {
+  "id": "./",
   "name": "Meletee",
   "short_name": "Meletee",
-  "description": "A calm, playful companion for studying well.",
+  "description": "A calm, playful companion for studying well: techniques that work, focus tools and study buddies.",
+  "lang": "en",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#fbf9f4",
-  "theme_color": "#7c5cff",
-  "icons": [{ "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+  "theme_color": "#fbf9f4",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Focus timer", "short_name": "Focus", "url": "./#/do/focus", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Reviews due", "short_name": "Reviews", "url": "./#/do/reviews", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Workspaces", "short_name": "Workspaces", "url": "./#/ws", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" }] }
+  ]
 }

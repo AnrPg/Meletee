@@ -44,7 +44,11 @@ function goalCard(g) {
   const isTeam = g.kind === 'team';
   const title = isTeam ? t('buddies.goals.teamTitle', { what: metricLabel(g.metric, g.target) }) : t('buddies.goals.sharedTitle', { what: metricLabel(g.metric, g.target) });
   let bar, rows, done;
-  if (isTeam) {
+  if (!g.joined) {
+    // the server sends members' numbers only to members of the goal: before joining, just who is in it
+    bar = null; done = false;
+    rows = g.members.map((m) => h('li.row.bud-member', avatar(m.emoji), h('span.bud-grow', m.name)));
+  } else if (isTeam) {
     const p = teamProgress(g.members, g.target);
     done = p.met;
     bar = progress(p.pct, title);
@@ -99,7 +103,7 @@ export async function goalsView() {
     h('header.stack', h('h1', t('buddies.goals.title')), h('p.lede', t('buddies.goals.lede')), h('p.muted.small', weekNote())),
     h('div.stack.center', h('button.btn', { onclick: newGoalSheet }, '✨ ', t('buddies.goals.new'))),
     now.length ? h('div.stack', now.map(goalCard)) : h('div.empty', h('p', '🌱'), h('p.muted', t('buddies.goals.none'))),
-    lastWeek(last, (g) => {
+    lastWeek(last.filter((g) => g.joined), (g) => {
       const total = g.members.reduce((n, m) => n + (m.value || 0), 0);
       if (g.kind === 'team') return total >= g.target ? t('buddies.week.teamMet', { what: metricLabel(g.metric, total) }) : t('buddies.week.teamTried', { what: metricLabel(g.metric, total) });
       return t('buddies.week.sharedDone', { n: sharedProgress(g.members, g.target).doneCount, of: g.members.length, what: metricLabel(g.metric, g.target) });

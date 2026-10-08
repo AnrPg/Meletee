@@ -30,8 +30,8 @@ and a trimmed real pack in `tests/fixtures/noema-pack.json`; nothing touches the
 
 | Data | Source | Notes |
 |---|---|---|
-| Library list | `<noemaUrl>/library/registry.js` | Fetched as text and parsed (never run) when CORS allows; otherwise loaded as a classic `<script>` (sets `window.NOEMA_REGISTRY`, no CORS needed). |
-| Library pack | `<noemaUrl>/library/subjects/<id>/pack.json` | With CORS. Fallback: `pack.js` as a classic script (sets `window.NOEMA_PACKS[id]`). |
+| Library list | `/noema-library/registry.js`, then `<noemaUrl>/library/registry.js` | Always fetched as text and parsed as JSON, never run. `/noema-library/*` is Meletee's same-origin Netlify proxy of `<noemaUrl>/library/*` (docs/SECURITY-HEADERS.md), so no CORS is needed; the direct URL works once noema-lite sends CORS headers (and in local dev). `config.noemaLibrary` overrides the proxy path. |
+| Library pack | `/noema-library/subjects/<id>/pack.json`, then `<noemaUrl>/library/subjects/<id>/pack.json` | Same: JSON only. `pack.js` is never loaded (no `<script>` fallback, by design; the CSP forbids it). |
 | Imported pack | Storage `noema-private/<user id>/packs/<id>.json` | The person's own files; noema-lite's storage policy already allows them to read it. |
 | Explore pack | Storage `noema-public/<owner>/<id>.json` | Public bucket, when `a:packmeta:<id>` names a `publicOwner`. |
 | Progress | `noema_kv`: `s:*:state` | Read only. Shape: `{ read: {sec: true}, res: {ex: {n, ok, last, t}}, fc: {cardKey: {box, due}}, pb: {pb: {box, due}}, boss, xp }`. |
@@ -39,8 +39,9 @@ and a trimmed real pack in `tests/fixtures/noema-pack.json`; nothing touches the
 | Capabilities | `noema_kv`: `a:caps` | Read only; written by noema-lite (see changes). |
 | Never read | `noema_kv`: `a:settings` | It holds the Gemini key today (change 5). |
 
-The script fallback runs code from the noema-lite site inside Meletee. It is the owner's own site and the
-same account, but CORS (change 0) lets Meletee drop the fallback.
+There used to be a `<script>` fallback for the library; it was removed (docs/REVIEW-1.0.md finding 1) because it
+ran noema-lite's files with Meletee's privileges (AI keys, session tokens). Library files are only ever data now.
+CORS (change 0) makes the proxy optional.
 
 ## 3. AI conversations (interface expected from phase 4)
 

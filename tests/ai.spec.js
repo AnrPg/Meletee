@@ -88,12 +88,12 @@ test('keys are saved on this device only, tested, never in the backup, and can b
   await page.getByRole('button', { name: 'Forget key' }).click();
   expect(await page.evaluate(() => localStorage.getItem('meletee-device:anthropicKey:local'))).toBeNull();
   // "remember" off keeps it for this tab only
-  await page.locator('#ai-remember-gemini').uncheck({ force: true }).catch(async () => {
-    await page.locator('details.ai-provider', { hasText: 'Gemini' }).locator('summary').click();
-    await page.locator('#ai-remember-gemini').uncheck();
-  });
+  const gemini = page.locator('details.ai-provider', { hasText: 'Gemini' });
+  if (!await gemini.evaluate((el) => el.open)) await gemini.locator('summary').click();
+  await expect(page.locator('#ai-remember-gemini')).toBeVisible();
+  await page.locator('#ai-remember-gemini').uncheck();
   await page.locator('#ai-key-gemini').fill('AIzaTestKeyTestKeyTestKey123');
-  await page.locator('details.ai-provider', { hasText: 'Gemini' }).getByRole('button', { name: 'Save' }).click();
+  await gemini.getByRole('button', { name: 'Save' }).click();
   const g = await page.evaluate(() => ({ local: localStorage.getItem('meletee-device:geminiKey:local'), session: sessionStorage.getItem('meletee-device:geminiKey:local') }));
   expect(g).toEqual({ local: null, session: 'AIzaTestKeyTestKeyTestKey123' });
   expect(await noHScroll(page)).toBe(true);
@@ -239,7 +239,7 @@ test('Greek: settings and tutor buttons are translated', async ({ page }) => {
   await expect(page.getByText(/Τα κλειδιά μένουν σε αυτή τη συσκευή/)).toBeVisible();
   await page.goto('/#/ws/recall');
   await page.locator('.ws-recall button.btn').first().click();
-  await expect(page.getByRole('button', { name: 'Μια βοήθεια, παρακαλώ' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Μια υπόδειξη, παρακαλώ' })).toBeVisible();
   expect(errors).toEqual([]);
 });
 

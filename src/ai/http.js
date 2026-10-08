@@ -19,6 +19,13 @@ export function backoff(attempt, retryAfter) {
 export const transient = (status) => status === 429 || status === 529 || status >= 500;
 export const MAX_RETRIES = 4;
 
+// A model id as the vendors write them (gemini-flash-latest, gemini-2.5-pro, claude-opus-4-1-20250805):
+// letters, digits, dots and dashes only. Model ids come from synced settings and restored backups, and the
+// Gemini one goes into the request path (with the API key header), so anything else is refused.
+export const MODEL_ID = /^[a-z0-9][a-z0-9.-]{0,79}$/i;
+export const isModelId = (m) => typeof m === 'string' && MODEL_ID.test(m) && !m.includes('..');
+export const safeModel = (m, fallback) => (isModelId(m) ? m : fallback);
+
 export function kindOf(status, message = '') {
   if (status === 401 || status === 403) return 'auth';
   if (/credit balance|billing|quota/i.test(message) || status === 429) return 'quota';

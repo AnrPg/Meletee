@@ -124,10 +124,11 @@ test('cheers: preset keys only, and every preset is translated in all four langu
 
 // ---------- invites ----------
 test('invite codes: unambiguous, parsed from links or typed loosely', () => {
-  const code = L.newCode((n) => Uint8Array.from({ length: n }, (_, i) => i * 37));
-  assert.match(code, /^[A-HJKMNP-Z2-9]{8}$/);
-  for (let i = 0; i < 50; i++) assert.match(L.newCode(), /^[A-HJKMNP-Z2-9]{8}$/);
-  assert.equal(L.parseCode('abcd 2345'), 'ABCD2345');
+  assert.equal(L.CODE_ALPHABET.length, 31, 'the alphabet has 31 characters (codes are made by the server)');
+  assert.equal(L.newCode, undefined, 'the client no longer makes codes');
+  assert.equal(L.parseCode('abcd 2345'), 'ABCD2345', 'old 8-character codes still work');
+  assert.equal(L.parseCode('abcde-23456'), 'ABCDE23456', 'new 10-character codes');
+  assert.equal(L.parseCode('ABCDE2345'), null, '9 characters');
   assert.equal(L.parseCode('ABCD-2345'), 'ABCD2345');
   assert.equal(L.parseCode('https://meletee.netlify.app/#/buddies/join/ABCD2345'), 'ABCD2345');
   assert.equal(L.parseCode('ABCD0345'), null, 'no zero');
@@ -152,6 +153,49 @@ test('room timer: focus, then the break follows by itself, then idle; the newest
   assert.equal(L.newerTimer(stop, tm), stop);
   assert.equal(L.newerTimer(null, tm), tm);
   assert.equal(L.newerTimer(tm, null), tm);
+});
+
+test('room timer from the network: cleanTimer keeps only well-formed, plausible records', () => {
+  const now = 1_800_000_000_000;
+  const ok = { phase: 'focus', minutes: 25, rest: 5, startedAt: now - 1000, endsAt: 1, by: 'u1', v: now - 1000, evil: '<b>' };
+  assert.deepEqual(L.cleanTimer(ok, now), { phase: 'focus', minutes: 25, rest: 5, startedAt: now - 1000, endsAt: now - 1000 + 25 * 60000, by: 'u1', v: now - 1000 }, 'endsAt derived, extra fields dropped');
+  assert.deepEqual(L.cleanTimer({ phase: 'idle', v: now, junk: 1 }, now), { phase: 'idle', v: now });
+  assert.deepEqual(L.cleanTimer({ phase: 'focus', minutes: 50, startedAt: now, v: now }, now).rest, 0, 'a missing break is 0');
+  assert.equal(L.cleanTimer(L.startTimer({ minutes: 120, rest: 60, now }), now).minutes, 120, 'the longest preset fits');
+  const bad = [
+    null, undefined, 'idle', 5, [], {},
+    { phase: 'focus', minutes: 100000, rest: 0, startedAt: now, v: now },   // a week of "study"
+    { phase: 'focus', minutes: 121, rest: 0, startedAt: now, v: now },
+    { phase: 'focus', minutes: 0, rest: 0, startedAt: now, v: now },
+    { phase: 'focus', minutes: 2.5, rest: 0, startedAt: now, v: now },
+    { phase: 'focus', minutes: '5', rest: 0, startedAt: now, v: now },      // string concatenation in sums
+    { phase: 'focus', minutes: 25, rest: 61, startedAt: now, v: now },
+    { phase: 'focus', minutes: 25, rest: -1, startedAt: now, v: now },
+    { phase: 'focus', minutes: 25, rest: 5, v: now },                        // no start
+    { phase: 'focus', minutes: 25, rest: 5, startedAt: now + 3600e3, v: now },
+    { phase: 'focus', minutes: 25, rest: 5, startedAt: now, v: 1e300 },      // would lock the room
+    { phase: 'idle', v: now + 120000 },
+    { phase: 'idle', v: '1' },
+    { phase: 'idle', v: NaN },
+    { phase: 'idle' },
+    { phase: 'pause', v: now },
+  ];
+  for (const b of bad) assert.equal(L.cleanTimer(b, now), null, JSON.stringify(b));
+  assert.equal(L.cleanTimer({ phase: 'idle', v: now, by: { id: 1 } }, now).by, undefined, 'by is a string or nothing');
+});
+
+test('room timer: only the minutes I was in the room are logged, capped at the block', () => {
+  const tm = L.startTimer({ minutes: 25, rest: 5, now: 0 });
+  assert.equal(L.roomMinutes(tm, 25 * 60000), 25);
+  assert.equal(L.roomMinutes(tm, 10 * 60000 + 20000), 10, 'joined late');
+  assert.equal(L.roomMinutes(tm, 999 * 60000), 25, 'never more than the block');
+  assert.equal(L.roomMinutes(tm, 0), 0);
+  assert.equal(L.roomMinutes(tm, -5), 0);
+  assert.equal(L.roomMinutes(tm, 'x'), 0);
+  assert.equal(L.roomMinutes({ phase: 'focus', minutes: 100000 }, 1e12), 120, 'even an unchecked record stays within 120');
+  assert.equal(L.roomMinutes({ phase: 'focus', minutes: '5' }, 5 * 60000), 0);
+  assert.equal(L.roomMinutes(L.stopTimer({ now: 0 }), 60000), 0);
+  assert.equal(L.roomMinutes(null, 60000), 0);
 });
 
 // ---------- presence ----------
@@ -262,7 +306,8 @@ const tick = () => new Promise((r) => setImmediate(r));
 
 test('room: live channel merges presence with the database, timers go out both ways', async () => {
   const calls = [];
-  const rpc = async (fn, args) => { calls.push([fn, args]); return fn === 'meletee_buddy_room_join' ? { timer: { phase: 'idle', v: 1 }, members: [{ id: 'c', name: 'Cy', emoji: '🐢', status: 'here' }] } : null; };
+  let dbMembers = [{ id: 'c', name: 'Cy', emoji: '🐢', status: 'here' }];
+  const rpc = async (fn, args) => { calls.push([fn, args]); return fn === 'meletee_buddy_room_join' ? { timer: { phase: 'idle', v: 1 }, members: dbMembers } : null; };
   let channel;
   const tracked = [], sent = [];
   const connect = (opts) => { channel = opts; return { track: (m) => tracked.push(m), broadcast: (e, p) => sent.push([e, p]), close: () => { channel.closed = true; } }; };
@@ -274,12 +319,27 @@ test('room: live channel merges presence with the database, timers go out both w
   assert.equal(channel.key, 'a');
   channel.onStatus('live');
   assert.deepEqual(tracked[0], { name: 'Ada', emoji: '🦉', status: 'here' });
-  channel.onPresence([{ id: 'b', name: 'Bo', emoji: '🐼', status: 'focus' }]);
+  // Bo appears on the socket first: shown only once the database lists him for me (blocks are filtered there)
+  channel.onPresence([{ id: 'b', name: 'Bo', emoji: '🐼', status: 'focus' }, { id: 'x', name: 'Blocked', emoji: '🐍', status: 'here' }]);
   assert.equal(states.at(-1).mode, 'live');
-  assert.deepEqual(states.at(-1).members.map((m) => m.id), ['b', 'c'], 'socket presence + people seen through the database');
+  assert.deepEqual(states.at(-1).members.map((m) => m.id), ['c'], 'unknown presence is not shown');
+  dbMembers = [{ id: 'b', name: 'Bo', emoji: '🐼', status: 'here' }, { id: 'c', name: 'Cy', emoji: '🐢', status: 'here' }];
+  const n = calls.length;
+  timers.fire('t', 1000);
+  await tick();
+  assert.deepEqual(calls[n], ['meletee_buddy_room_join', { p_room: 'r1', p_status: 'here' }], 'a presence change asks the database');
+  assert.deepEqual(states.at(-1).members.map((m) => [m.id, m.status]), [['b', 'focus'], ['c', 'here']], 'socket presence + people seen through the database');
   // a buddy's timer arrives by broadcast; an older one is ignored
-  channel.onBroadcast('timer', { phase: 'focus', minutes: 25, rest: 5, endsAt: 9e12, v: 10 });
+  const now = Date.now();
+  channel.onBroadcast('timer', { phase: 'focus', minutes: 25, rest: 5, startedAt: now, endsAt: 9e12, v: 10, extra: 'x' });
   channel.onBroadcast('timer', { phase: 'idle', v: 5 });
+  assert.equal(room.state.timer.v, 10);
+  assert.deepEqual(room.state.timer, { phase: 'focus', minutes: 25, rest: 5, startedAt: now, endsAt: now + 25 * 60000, v: 10 }, 'rebuilt: endsAt derived, unknown fields dropped');
+  // a hostile buddy's timers are ignored: huge minutes, strings, a v from the far future
+  channel.onBroadcast('timer', { phase: 'focus', minutes: 100000, rest: 0, startedAt: now, endsAt: now + 1000, v: 11 });
+  channel.onBroadcast('timer', { phase: 'focus', minutes: '5', rest: 0, startedAt: now, v: 12 });
+  channel.onBroadcast('timer', { phase: 'idle', v: 1e300 });
+  channel.onBroadcast('timer', 'idle');
   assert.equal(room.state.timer.v, 10);
   // my timer: broadcast and stored
   await room.setTimer({ phase: 'idle', v: 20 });
@@ -297,7 +357,7 @@ test('room: live channel merges presence with the database, timers go out both w
 
 test('room: socket failure switches to polling every few seconds, without a socket it polls from the start', async () => {
   let n = 0;
-  const rpc = async (fn) => (fn === 'meletee_buddy_room_join' ? { timer: { phase: 'focus', minutes: 25, endsAt: 9e12, v: ++n }, members: [{ id: 'b', name: 'Bo', emoji: '🐼', status: 'focus' }] } : null);
+  const rpc = async (fn) => (fn === 'meletee_buddy_room_join' ? { timer: { phase: 'focus', minutes: 25, rest: 5, startedAt: Date.now(), endsAt: 9e12, v: ++n }, members: [{ id: 'b', name: 'Bo', emoji: '🐼', status: 'focus' }] } : null);
   let channel;
   const timers = fakeTimers();
   const states = [];
@@ -366,4 +426,36 @@ test('SQL: phase 7 section is idempotent in style, has RLS on every buddy table 
     assert.ok(fns.some((m) => m[1] === 'meletee_buddy_' + fn), fn);
   }
   for (const m of p7.matchAll(/create policy "([^"]+)" on ([\w.]+)/g)) assert.match(p7, new RegExp(`drop policy if exists "${m[1]}"\\s+on ${m[2].replace('.', '\\.')}`), m[1]);
+});
+
+test('SQL: the 1.0 security fixes are in place (docs/REVIEW-1.0.md findings 2-5, 8)', () => {
+  const sql = readFileSync(new URL('../cloud/supabase.sql', import.meta.url), 'utf8');
+  const fn = (name) => sql.match(new RegExp(`create or replace function public\\.${name}\\([\\s\\S]*?end \\$\\$;`))?.[0] || '';
+  // 2) the room timer is validated and rebuilt on the server
+  const timer = fn('meletee_buddy_room_timer');
+  assert.match(timer, /between 1 and 120/);
+  assert.match(timer, /between 0 and 60/);
+  assert.match(timer, /now_ms \+ 60000/);
+  assert.doesNotMatch(timer, /p_timer \|\|/, 'never stores the raw payload');
+  // 3) goal numbers only for members (challenges by design)
+  assert.match(fn('meletee_buddy_overview'), /'value', case when gm\.joined or g\.kind = 'challenge'/);
+  // 4) invites: no insert/update policy, server-made codes, attempt limit, decline only after a preview
+  assert.doesNotMatch(sql, /create policy "[^"]+"\s+on public\.meletee_buddy_invites\s+for (all|insert|update)/);
+  assert.match(sql, /create policy "see own buddy invites"\s+on public\.meletee_buddy_invites\s+for select/);
+  assert.match(sql, /create policy "delete own buddy invites" on public\.meletee_buddy_invites\s+for delete/);
+  assert.match(fn('meletee_buddy_invite_create'), /gen_random_uuid\(\)/);
+  assert.match(fn('meletee_buddy_invite_create'), />= 20/);
+  for (const f of ['meletee_buddy_invite_preview', 'meletee_buddy_accept_invite', 'meletee_buddy_decline_invite']) assert.match(fn(f), /meletee_buddy_code_try\(me\)/, f);
+  assert.match(fn('meletee_buddy_code_try'), />= 30/);
+  assert.match(fn('meletee_buddy_decline_invite'), /meletee_buddy_invite_seen/);
+  assert.match(sql, /revoke execute on function public\.meletee_buddy_code_try\(uuid\) from public, anon, authenticated/);
+  assert.doesNotMatch(sql, /'meletee_buddy_code_try\(uuid\)'/, 'never in the grant list');
+  assert.doesNotMatch(fn('meletee_buddy_invite_preview'), /\bstable\b/);
+  // 5) blocks hide both sides in rooms
+  assert.match(fn('meletee_buddy_room_state'), /status = 'blocked'/);
+  assert.equal((fn('meletee_buddy_overview').match(/status = 'blocked'/g) || []).length >= 3, true);
+  // 8) size caps
+  assert.match(sql, /meletee_kv_value_size check \(char_length\(value\) <= 1000000\)/);
+  assert.match(sql, /meletee_snapshots_size check \(pg_column_size\(data\) <= 5000000\)/);
+  assert.match(sql, /create trigger meletee_snapshots_cap before insert or update/);
 });

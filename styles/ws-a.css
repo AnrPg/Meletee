@@ -51,7 +51,7 @@
 .ws-il-kind{padding:var(--s4);border-radius:var(--r-sm);background:var(--bg2)}
 .ws-il-kind p{margin:0}
 .ws-il-kind .row{gap:var(--s2)}
-.ws-il-feedback{font-weight:700;color:var(--leaf)}
+.ws-il-feedback{font-weight:700;color:var(--leaf-ink)}
 .ws-il-feedback[data-ok="false"]{color:var(--ink2)}
 .ws-il-done p{margin:0}
 

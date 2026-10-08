@@ -199,9 +199,10 @@ export const snapshots = {
   async auto() {
     if (!backend()?.session() || !isCloudAccount()) return false;
     if (Date.now() - jget(pre() + 'meta:lastSnapshot', 0) < 20 * 3600e3) return false;
-    await this.save('', AUTO);
+    // keep the newest 30 (trim first: the database refuses more than 40, cloud/supabase.sql 2b)
     const autos = (await this.list()).filter((s) => s.kind === AUTO);
-    for (const s of autos.slice(30)) await this.remove(s.id).catch(() => {});
+    for (const s of autos.slice(29)) await this.remove(s.id).catch(() => {});
+    await this.save('', AUTO);
     return true;
   },
   // Replace this account's data with a restore point, then push it as the newest version.

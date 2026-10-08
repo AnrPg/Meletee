@@ -311,3 +311,53 @@ test('the AI tutor finds the noema-lite subject of a linked course or topic', as
   assert.equal(noemaSubjectOf({ type: 'workspace', id: 'feynman', label: c.topics[0].title }, [c]), 'databricks');
   assert.equal(noemaSubjectOf({ type: 'workspace', id: 'feynman', label: 'Something else' }, [c]), null);
 });
+
+// ---------- restoring a backup (docs/REVIEW-1.0.md finding 7) ----------
+test('importBackup writes only the account data the app knows, as valid JSON', () => {
+  const acc = store.account();
+  const k = (n) => `meletee1:${acc}:${n}`;
+  const before = localStorage.getItem(k('cache:noemaOutbox'));
+  const n = store.importBackup({ format: store.BACKUP_FORMAT, version: 1, data: {
+    'a:courses': '[{"id":"c1"}]',
+    'a:settings': '{"lang":"el"}',
+    'a:grow:lab': '[]',
+    'a:ws:deck:cards': '[]',
+    'a:ws:recall:sets': '{}',
+    'a:buddies:logged': '[]',
+    'cache:noemaOutbox': '[{"key":"a:inbox:meletee:x","value":"{}"}]', // would be forwarded to noema-lite
+    'cache:noema': '{}',
+    'meta:lastSnapshot': '1',
+    'a:cache.noema': '{}',
+    'a:timer': '{"phase":"focus"}',          // device-only
+    'a:inbox:meletee:x': '{}',
+    'a:__proto__': '{}',
+    'a:../../x': '{}',
+    'a:unknownThing': '{}',
+    'a:ws:<script>:x': '[]',
+    'a:sessions': 'not json',
+    'a:recalls': 42,
+    'a:today': 'x'.repeat(1000001),
+  } });
+  assert.equal(n, 6);
+  assert.equal(localStorage.getItem(k('a:courses')), '[{"id":"c1"}]');
+  assert.equal(localStorage.getItem(k('a:ws:recall:sets')), '{}');
+  assert.equal(localStorage.getItem(k('cache:noemaOutbox')), before, 'the noema-lite outbox is never restored');
+  for (const bad of ['cache:noema', 'meta:lastSnapshot', 'a:cache.noema', 'a:timer', 'a:inbox:meletee:x', 'a:__proto__', 'a:../../x', 'a:unknownThing', 'a:ws:<script>:x', 'a:sessions', 'a:recalls', 'a:today'])
+    assert.equal(localStorage.getItem(k(bad)), null, bad);
+  assert.equal(store.restorable('a:ai'), true);
+  assert.equal(store.restorable('ai'), false);
+  assert.throws(() => store.importBackup({ format: 'x', data: {} }), /not a meletee backup/);
+  assert.throws(() => store.importBackup({ format: store.BACKUP_FORMAT, data: [] }), /not a meletee backup/);
+  for (const name of ['courses', 'settings', 'grow:lab', 'ws:deck:cards', 'ws:recall:sets', 'buddies:logged']) localStorage.removeItem(k('a:' + name));
+});
+
+// ---------- the noema-lite library is data only (finding 1) ----------
+test('library: same-origin proxy first, then noema-lite directly; never a script', async () => {
+  const { libraryBases } = await import('../src/noema/source.js');
+  assert.deepEqual(libraryBases({ noemaUrl: 'https://noema-lite.netlify.app/' }), ['/noema-library', 'https://noema-lite.netlify.app/library']);
+  assert.deepEqual(libraryBases({ noemaUrl: 'https://n.app', noemaLibrary: 'https://n.app/library/' }), ['https://n.app/library']);
+  assert.deepEqual(libraryBases({}), []);
+  const src = readFileSync(new URL('../src/noema/source.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /createElement\(\s*['"]script/, 'no <script> loading');
+  assert.doesNotMatch(src, /NOEMA_PACKS|pack\.js[`'"]/, 'pack.js is never used');
+});

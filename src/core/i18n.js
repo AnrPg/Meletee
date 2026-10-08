@@ -27,17 +27,21 @@ export function detect() {
 export const EXTRA = ['ws/a', 'ws/b', 'ws/c', 'ai', 'grow', 'cloud', 'buddies', 'meta'];
 
 async function fetchJSON(path) {
+  // The single-file build (tools/build-single.mjs) carries every bundle inline.
+  const inline = globalThis.__meleteeFiles?.[`i18n/${path}.json`];
+  if (inline) return inline;
   try {
     const res = await fetch(new URL(`../../i18n/${path}.json`, import.meta.url));
     return res.ok ? await res.json() : {};
   } catch { return {}; }
 }
 
-async function load(code) {
-  if (dicts[code]) return dicts[code];
-  const parts = await Promise.all([fetchJSON(code), ...EXTRA.map((g) => fetchJSON(`${g}.${code}`))]);
-  dicts[code] = Object.assign({}, ...parts);
-  return dicts[code];
+const loading = {};
+function load(code) {
+  if (dicts[code]) return Promise.resolve(dicts[code]);
+  loading[code] ||= Promise.all([fetchJSON(code), ...EXTRA.map((g) => fetchJSON(`${g}.${code}`))])
+    .then((parts) => (dicts[code] = Object.assign({}, ...parts)));
+  return loading[code];
 }
 
 export async function setLang(code) {

@@ -2,7 +2,7 @@
 // Plain fetch, streamed (SSE text_delta). No temperature/top_p/thinking settings: the
 // default model thinks adaptively and depth is set with output_config.effort.
 import { sseParser, claudeReducer } from './sse.js';
-import { AIError, wait, backoff, transient, MAX_RETRIES, kindOf } from './http.js';
+import { AIError, wait, backoff, transient, MAX_RETRIES, kindOf, safeModel, isModelId } from './http.js';
 import { deviceFlag } from './keys.js';
 
 export const DEFAULT_CLAUDE = 'claude-opus-5-5';
@@ -23,6 +23,7 @@ const headers = (key) => ({
  * → { text, stop, refused, truncated, model, usage }
  */
 export async function claudeCall({ key, model = DEFAULT_CLAUDE, rules, material = '', messages, effort = 'low', format = null, maxTokens = 16000, signal, onText }) {
+  model = safeModel(model, DEFAULT_CLAUDE);
   if (!key) throw new AIError('No Claude key on this device.', 'nokey', 401);
   let fallback = deviceFlag.get(NO_FALLBACK) !== '1';
   const system = [{ type: 'text', text: rules, cache_control: { type: 'ephemeral' } }];
@@ -91,5 +92,5 @@ export async function claudeModels(key) {
     throw new AIError(msg || `HTTP ${r.status}`, kindOf(r.status, msg), r.status);
   }
   const d = await r.json();
-  return (d.data || []).map((m) => m.id).filter(Boolean);
+  return (d.data || []).map((m) => m.id).filter(isModelId);
 }

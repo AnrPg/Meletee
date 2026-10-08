@@ -1,9 +1,8 @@
-// Routes for the noema-lite screens, and the background work of phase 6 (started once at boot,
-// because registerCloud runs once while the app starts):
+// The background work of phase 6, started once at boot by startBackground() in src/views/index.js
+// when there is an account or a noema-linked course (the noema-lite screens are routed there too):
 //   - key/value sync with meletee_kv + the daily restore point (signed in only)
 //   - AI conversations -> noema_conversations (when src/ai/convos.js exists)
 //   - results of noema-linked topics -> noema-lite's inbox (when noema-lite supports it)
-import { hub, subjectView } from '../noema/views.js';
 import { backend } from './client.js';
 import * as sync from './sync.js';
 import { startConvoSync } from './convos.js';
@@ -23,9 +22,7 @@ export function noemaSubjectOf(ctx, courses = study.courses()) {
   return null;
 }
 
-export function registerCloud(router) {
-  router.route('/noema', hub);
-  router.route('/noema/:id', subjectView);
+export function startCloud() {
   try {
     sync.start();
     watch();

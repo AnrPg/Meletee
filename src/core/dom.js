@@ -36,22 +36,59 @@ export function svg(markup) {
   return t.content.firstElementChild;
 }
 
+// One polite live region for the whole app: short news (toasts, a finished timer) is read out
+// once by screen readers, without making whole screens "live".
+export function announce(text) {
+  let live = document.getElementById('live');
+  if (!live) {
+    live = h('div.sr-only', { id: 'live', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
+    document.body.append(live);
+  }
+  live.textContent = '';
+  setTimeout(() => { live.textContent = String(text); }, 60);
+}
+
 export function toast(text, ms = 2200) {
   document.querySelector('.toast')?.remove();
-  const el = h('div.toast', { role: 'status' }, text);
+  const el = h('div.toast', { 'aria-hidden': 'true' }, text);
   document.body.append(el);
+  announce(text);
   setTimeout(() => el.remove(), ms);
 }
 
-// A bottom sheet. Returns a close function.
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"]),[contenteditable="true"]';
+const focusables = (root) => [...root.querySelectorAll(FOCUSABLE)].filter((el) => !el.closest('[hidden]') && el.getClientRects().length);
+
+// A bottom sheet (a modal dialog). Focus stays inside while it is open (Tab and Shift+Tab wrap),
+// Escape or a tap on the backdrop closes it, and focus returns to whatever opened it.
+// Returns a close function.
 export function sheet(content, { label } = {}) {
   const prev = document.activeElement;
-  const close = () => { back.remove(); document.removeEventListener('keydown', onKey); prev?.focus?.(); };
-  const onKey = (e) => { if (e.key === 'Escape') close(); };
-  const box = h('div.sheet', { role: 'dialog', 'aria-modal': 'true', 'aria-label': label, tabindex: '-1' }, h('div.grip'), content);
+  let closed = false;
+  const close = () => {
+    if (closed) return;
+    closed = true;
+    back.remove(); document.removeEventListener('keydown', onKey, true);
+    if (prev?.isConnected) prev.focus?.();
+  };
+  const onKey = (e) => {
+    if (!back.isConnected) { document.removeEventListener('keydown', onKey, true); return; }
+    // only the topmost sheet answers
+    const sheets = document.querySelectorAll('.sheet-backdrop');
+    if (sheets[sheets.length - 1] !== back) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); return; }
+    if (e.key !== 'Tab') return;
+    const f = focusables(box);
+    if (!f.length) { e.preventDefault(); box.focus(); return; }
+    const first = f[0]; const last = f[f.length - 1];
+    const inside = box.contains(document.activeElement);
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === box || !inside)) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (document.activeElement === last || !inside)) { e.preventDefault(); first.focus(); }
+  };
+  const box = h('div.sheet', { role: 'dialog', 'aria-modal': 'true', 'aria-label': label, tabindex: '-1' }, h('div.grip', { 'aria-hidden': 'true' }), content);
   const back = h('div.sheet-backdrop', { onclick: (e) => { if (e.target === back) close(); } }, box);
   document.body.append(back);
-  document.addEventListener('keydown', onKey);
+  document.addEventListener('keydown', onKey, true);
   box.focus();
   return close;
 }

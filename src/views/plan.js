@@ -11,7 +11,7 @@ export function plan() {
   let tab = store.get('ui', {}).planTab || 'week';
   const draw = () => {
     const seg = h('div.seg', { role: 'tablist' }, ['week', 'term'].map((k) => h('button', {
-      role: 'tab', 'aria-pressed': String(tab === k), 'aria-selected': String(tab === k),
+      role: 'tab', 'aria-selected': String(tab === k),
       onclick: () => { tab = k; store.update('ui', (u) => ({ ...u, planTab: k })); draw(); },
     }, t(`plan.${k}`))));
     root.replaceChildren(
@@ -65,7 +65,7 @@ function editBlock(b, redraw, isNew = false) {
       h('option', { value: '' }, '—'), courses.map((c) => h('option', { value: c.id, selected: c.id === b.courseId }, c.name)))),
     h('label.field-row', t('plan.label'), h('input.field', { name: 'label', id: 'block-label', value: b.label || '', placeholder: t('plan.labelPlaceholder') })),
     h('div.row', { style: { justifyContent: 'space-between' } },
-      isNew ? h('span') : h('button.btn.ghost.small', { type: 'button', style: { color: 'var(--bad)' }, onclick: () => { study.saveBlocks(study.blocks().filter((x) => x.id !== b.id)); close(); redraw(); } }, t('common.delete')),
+      isNew ? h('span') : h('button.btn.ghost.small', { type: 'button', style: { color: 'var(--bad-ink)' }, onclick: () => { study.saveBlocks(study.blocks().filter((x) => x.id !== b.id)); close(); redraw(); } }, t('common.delete')),
       h('button.btn.small', { type: 'submit' }, t('common.save'))));
   close = sheet(f, { label: t('plan.addBlock') });
 }

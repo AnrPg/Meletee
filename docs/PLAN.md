@@ -131,10 +131,13 @@ Every workspace works without AI. Phase 4 adds the AI on top.
 - Friendly competition: weekly challenges and an opt-in leaderboard.
 - Team play (συναγωνισμός): pooling minutes or reviews toward a shared goal.
 
-### Phase 8: Polish and release
+### Phase 8: Polish and release — done (1.0.0)
 
-- An accessibility pass (keyboard, screen reader, reduced motion), performance work, and a review of the translations by native speakers.
-- Single-file build, an installable app, a privacy note and a first public release.
+- Accessibility pass: `tests/a11y.spec.js` runs axe on every screen in light and dark, in two languages, on desktop and phone; contrast tokens, focus handling in sheets, a skip link, focus and titles on navigation, one polite live region, reduced motion everywhere.
+- Performance: every area loads on first use; the home route went from 104 requests / 587 KB to 42 / 222 KB.
+- Service worker precaches the app shell and caches compendium sections as they are read; installable app with PNG icons and shortcuts (`npm run icons`).
+- Single-file build `npm run build:single` → `dist/meletee.html`, tested from `file://`.
+- Privacy page at `#/privacy` in four languages; README and CHANGELOG for the release.
 
 ## Phase 0 and 1 task list (starting now)
 

@@ -93,7 +93,7 @@ export function course({ id }) {
           ? h('div.list.topics', c.topics.map((tp) => topicRow(c, tp, draw)))
           : h('p.muted.small', t('courses.topicsEmpty'))),
 
-      h('button.btn.ghost.small', { style: { alignSelf: 'center', color: 'var(--bad)' }, onclick: async () => {
+      h('button.btn.ghost.small', { style: { alignSelf: 'center', color: 'var(--bad-ink)' }, onclick: async () => {
         if (await confirmSheet({ title: t('courses.delete'), text: t('courses.deleteText', { name: c.name }), ok: t('common.delete'), danger: true })) {
           study.removeCourse(c.id); location.hash = '#/do/courses';
         }
@@ -139,7 +139,7 @@ function topicSheet(c, tp, redraw) {
         : h('button.btn.small', { onclick: () => { set((x) => study.markStudied(x)); toast(t('reviews.scheduled')); draw(); } }, t('reviews.studiedToday')),
       topicLinks(tp),
       h('div.row', { style: { justifyContent: 'space-between' } },
-        h('button.btn.ghost.small', { style: { color: 'var(--bad)' }, onclick: () => {
+        h('button.btn.ghost.small', { style: { color: 'var(--bad-ink)' }, onclick: () => {
           const list = study.courses(); const cc = list.find((x) => x.id === c.id);
           cc.topics = cc.topics.filter((x) => x.id !== tp.id); study.saveCourses(list); c.topics = cc.topics; close(); redraw();
         } }, t('common.delete')),
