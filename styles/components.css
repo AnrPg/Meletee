@@ -174,3 +174,9 @@ textarea.field{resize:vertical;line-height:1.5}
 .block>span:first-child{font-variant-numeric:tabular-nums;color:var(--c)}
 .add{align-self:flex-start;width:32px;height:32px;border-radius:50%;color:var(--ink3);border:1px dashed var(--line)}
 .add:hover{color:var(--c);border-color:var(--c)}
+
+/* ---------- workspaces ---------- */
+.ws-head{display:flex;gap:var(--s4);align-items:flex-start}
+.ws-emoji{font-size:34px;line-height:1;width:56px;height:56px;border-radius:var(--r);display:grid;place-items:center;background:var(--c-bg);flex:none}
+.ws-body{display:flex;flex-direction:column;gap:var(--s5)}
+.tabs{display:flex;gap:var(--s2);flex-wrap:wrap}

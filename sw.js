@@ -1,11 +1,11 @@
 // Offline support: network first for navigations and JSON (fresh content),
 // cache first for everything else. VERSION is replaced by tools/build.mjs.
 const VERSION = 'dev';
-const CACHE = `melete-${VERSION}`;
+const CACHE = `meletee-${VERSION}`;
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith('melete-') && k !== CACHE).map((k) => caches.delete(k))))
+  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith('meletee-') && k !== CACHE).map((k) => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
 

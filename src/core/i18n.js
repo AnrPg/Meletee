@@ -22,10 +22,21 @@ export function detect() {
   return 'en';
 }
 
+// Workspace strings live in their own bundles (i18n/ws/<group>.<lang>.json) so
+// each group of tools can be translated on its own.
+export const EXTRA = ['ws/a', 'ws/b', 'ws/c'];
+
+async function fetchJSON(path) {
+  try {
+    const res = await fetch(new URL(`../../i18n/${path}.json`, import.meta.url));
+    return res.ok ? await res.json() : {};
+  } catch { return {}; }
+}
+
 async function load(code) {
   if (dicts[code]) return dicts[code];
-  const res = await fetch(new URL(`../../i18n/${code}.json`, import.meta.url));
-  dicts[code] = await res.json();
+  const parts = await Promise.all([fetchJSON(code), ...EXTRA.map((g) => fetchJSON(`${g}.${code}`))]);
+  dicts[code] = Object.assign({}, ...parts);
   return dicts[code];
 }
 

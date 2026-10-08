@@ -2,6 +2,7 @@ import { h } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { index, item as findItem, section as findSection } from '../core/content.js';
 import { icon } from '../ui/art.js';
+import { forItem } from '../workspaces/registry.js';
 export { find } from './find.js';
 
 const KIND_EMOJI = {
@@ -58,9 +59,11 @@ export async function method({ id }) {
   const block = (title, html) => html ? h('section', h('h3', { style: { marginBottom: '8px' } }, title), h('div.prose', { html })) : null;
   const hasParts = it.structured && (p.why || p.how);
   const ex = p.examples || {};
+  const ws = forItem(it.id);
   return h('article.stack-lg',
     h('div', header(s.title, it.title, null, s.kind === 'techniques' ? '#/learn/methods' : `#/learn/guide/${s.id}`),
-      timeBadge(it) ? h('div.row', { style: { marginTop: '12px' } }, timeBadge(it)) : null),
+      (timeBadge(it) || ws) ? h('div.row', { style: { marginTop: '12px' } }, timeBadge(it),
+        ws ? h('a.btn.soft.small', { href: `#/ws/${ws.id}` }, ws.emoji, ' ', t('learn.openWorkspace')) : null) : null),
     hasParts
       ? h('div.stack-lg',
           it.leadHtml ? h('div.prose.lede', { html: it.leadHtml }) : null,

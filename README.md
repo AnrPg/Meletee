@@ -1,6 +1,6 @@
-# ◆ Melete
+# ◆ Meletee
 
-A calm, playful companion for studying well. Melete (Μελέτη, the Muse of practice) helps you **learn how to learn**, plan your time, keep going and study with friends. It works alongside [noema-lite](https://github.com/AnrPg/noema-lite), the subject engine: noema-lite holds *what* to learn, Melete holds *how*.
+A calm, playful companion for studying well. Meletee (Μελέτη, the Muse of practice) helps you **learn how to learn**, plan your time, keep going and study with friends. It works alongside [noema-lite](https://github.com/AnrPg/noema-lite), the subject engine: noema-lite holds *what* to learn, Meletee holds *how*.
 
 - Techniques that work, explained simply, with how long each one takes and the research behind it
 - Focus timer, schedule maker and spaced review planner (coming in phase 2)
@@ -30,7 +30,7 @@ npm test                       # unit tests + end-to-end tests (desktop and phon
 
 ```
 index.html, sw.js, manifest.webmanifest
-src/core/      dom helper, storage (melete1:<account>:…), i18n, router, content loader
+src/core/      dom helper, storage (meletee1:<account>:…), i18n, router, content loader
 src/ui/        companion and icons
 src/views/     one module per screen
 styles/        tokens (shared with noema-lite), base, components

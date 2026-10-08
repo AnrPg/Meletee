@@ -1,5 +1,5 @@
 {
-  "app.name": "Melete",
+  "app.name": "Meletee",
   "nav.label": "Menu principal",
   "nav.home": "Accueil",
   "nav.learn": "Apprendre",
@@ -100,8 +100,8 @@
   "settings.export": "Enregistrer une sauvegarde",
   "settings.import": "Restaurer",
   "settings.restored": "{n} éléments restaurés",
-  "settings.restoreFailed": "Ce fichier n’est pas une sauvegarde Melete.",
-  "settings.about": "Melete fonctionne avec noema-lite. Fait avec soin pour les élèves et étudiants du monde entier.",
+  "settings.restoreFailed": "Ce fichier n’est pas une sauvegarde Meletee.",
+  "settings.about": "Meletee fonctionne avec noema-lite. Fait avec soin pour les élèves et étudiants du monde entier.",
   "common.save": "Enregistrer",
   "common.cancel": "Annuler",
   "common.add": "Ajouter",
@@ -213,5 +213,13 @@
   "plan.termLede": "Tes examens dans l’ordre, avec le rythme qui t’y mène avec une semaine d’avance.",
   "plan.examPast": "L’examen est passé",
   "plan.daysLeft.one": "{n} jour restant",
-  "plan.daysLeft.other": "{n} jours restants"
+  "plan.daysLeft.other": "{n} jours restants",
+  "ws.title": "Espaces de travail",
+  "ws.lede": "Une petite boîte à outils pour chaque technique. Choisis-en une et lance-toi.",
+  "ws.readAbout": "Comment ça marche →",
+  "ws.common.topic": "Sujet",
+  "ws.common.anyTopic": "N’importe quel sujet",
+  "learn.openWorkspace": "Ouvrir l’espace de travail",
+  "do.workspaces": "Espaces de travail",
+  "do.workspacesText": "Une boîte à outils pour chaque technique"
 }

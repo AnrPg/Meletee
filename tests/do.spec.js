@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 async function open(page, hash = '', lang = 'en') {
-  await page.addInitScript((l) => { if (!localStorage.getItem('melete1:local:a:settings')) localStorage.setItem('melete1:local:a:settings', JSON.stringify({ lang: l })); }, lang);
+  await page.addInitScript((l) => { if (!localStorage.getItem('meletee1:local:a:settings')) localStorage.setItem('meletee1:local:a:settings', JSON.stringify({ lang: l })); }, lang);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/' + hash);
@@ -25,7 +25,7 @@ test('focus timer runs, asks for recall, then starts the break', async ({ page }
   await page.locator('#recall-text').fill('Glycolysis makes 2 ATP');
   await page.getByRole('button', { name: 'Start 5-minute break' }).click();
   await expect(page.locator('.ring-label')).toHaveText('Break');
-  const saved = await page.evaluate(() => ({ s: JSON.parse(localStorage.getItem('melete1:local:a:sessions')), r: JSON.parse(localStorage.getItem('melete1:local:a:recalls')) }));
+  const saved = await page.evaluate(() => ({ s: JSON.parse(localStorage.getItem('meletee1:local:a:sessions')), r: JSON.parse(localStorage.getItem('meletee1:local:a:recalls')) }));
   expect(saved.s[0].minutes).toBe(15);
   expect(saved.r[0].text).toContain('Glycolysis');
   expect(errors).toEqual([]);

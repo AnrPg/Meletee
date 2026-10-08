@@ -1,5 +1,5 @@
 {
-  "app.name": "Melete",
+  "app.name": "Meletee",
   "nav.label": "Главное меню",
   "nav.home": "Главная",
   "nav.learn": "Учись",
@@ -100,8 +100,8 @@
   "settings.export": "Сохранить копию",
   "settings.import": "Восстановить",
   "settings.restored": "Восстановлено элементов: {n}",
-  "settings.restoreFailed": "Этот файл не является копией Melete.",
-  "settings.about": "Melete работает вместе с noema-lite. Сделано с заботой о студентах и школьниках по всему миру.",
+  "settings.restoreFailed": "Этот файл не является копией Meletee.",
+  "settings.about": "Meletee работает вместе с noema-lite. Сделано с заботой о студентах и школьниках по всему миру.",
   "common.save": "Сохранить",
   "common.cancel": "Отмена",
   "common.add": "Добавить",
@@ -225,5 +225,13 @@
   "plan.daysLeft.one": "Остался {n} день",
   "plan.daysLeft.few": "Осталось {n} дня",
   "plan.daysLeft.many": "Осталось {n} дней",
-  "plan.daysLeft.other": "Осталось {n} дня"
+  "plan.daysLeft.other": "Осталось {n} дня",
+  "ws.title": "Мастерские",
+  "ws.lede": "Небольшой набор инструментов для каждой техники. Выбери одну и начни.",
+  "ws.readAbout": "Как это работает →",
+  "ws.common.topic": "Тема",
+  "ws.common.anyTopic": "Любая тема",
+  "learn.openWorkspace": "Открыть мастерскую",
+  "do.workspaces": "Мастерские",
+  "do.workspacesText": "Инструменты для каждой техники"
 }

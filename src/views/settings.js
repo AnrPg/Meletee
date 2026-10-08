@@ -49,7 +49,7 @@ export function settings() {
       h('h2', t('settings.data')),
       h('p.muted', t('settings.dataText')),
       h('div.row',
-        h('button.btn.soft.small', { onclick: () => download(`melete-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(store.exportBackup(), null, 2)) }, t('settings.export')),
+        h('button.btn.soft.small', { onclick: () => download(`meletee-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(store.exportBackup(), null, 2)) }, t('settings.export')),
         h('button.btn.ghost.small', { onclick: () => file.click() }, t('settings.import')), file)),
     h('p.muted.small', t('settings.about')));
 }

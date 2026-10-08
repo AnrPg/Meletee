@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, 'dist', 'site');
-const SHIP = ['index.html', 'manifest.webmanifest', 'sw.js', 'src', 'styles', 'i18n', 'content', 'assets'];
+const SHIP = ['index.html', 'config.js', 'manifest.webmanifest', 'sw.js', 'src', 'styles', 'i18n', 'content', 'assets'];
 
 execFileSync(process.execPath, [join(root, 'tools', 'build-content.mjs')], { stdio: 'inherit' });
 

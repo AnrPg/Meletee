@@ -6,6 +6,7 @@ import { focus } from './focus.js';
 import { courses, course } from './courses.js';
 import { reviews } from './reviews.js';
 import { plan } from './plan.js';
+import { workspaces, workspace } from './workspace.js';
 import { settings } from './settings.js';
 import { h } from '../core/dom.js';
 import { t } from '../core/i18n.js';
@@ -33,6 +34,8 @@ export function registerViews(router) {
   router.route('/do/course/:id', course);
   router.route('/do/reviews', reviews);
   router.route('/do/plan', plan);
+  router.route('/ws', workspaces);
+  router.route('/ws/:id', workspace);
   router.route('/grow', () => soon('grow'));
   router.route('/buddies', () => soon('buddies'));
   router.route('/settings', settings);

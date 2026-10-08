@@ -8,7 +8,7 @@ const LANGS = {
 };
 
 async function open(page, lang, hash = '') {
-  await page.addInitScript((l) => localStorage.setItem('melete1:local:a:settings', JSON.stringify({ lang: l })), lang);
+  await page.addInitScript((l) => localStorage.setItem('meletee1:local:a:settings', JSON.stringify({ lang: l })), lang);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -58,7 +58,7 @@ test('settings switch language and theme, backup round-trips', async ({ page }) 
   await page.getByRole('button', { name: 'Ελληνικά' }).click();
   await expect(page.getByRole('heading', { name: 'Ρυθμίσεις' })).toBeVisible();
   const backup = await page.evaluate(async () => (await import('/src/core/store.js')).exportBackup());
-  expect(backup.format).toBe('melete-backup');
+  expect(backup.format).toBe('meletee-backup');
   expect(JSON.parse(backup.data['a:settings']).lang).toBe('el');
 });
 

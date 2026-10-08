@@ -1,10 +1,10 @@
-# Melete: implementation plan
+# Meletee: implementation plan
 
-Working name "melete" (Μελέτη, the Muse of practice; Greek for study). It changes everywhere if you pick another name.
+Meletee takes its name from Μελέτη (Melete), the Muse of practice; the word is Greek for study.
 
 ## What we are building
 
-A study-habits companion for every student. It sits next to noema-lite. noema-lite holds **what** to learn: subjects, sections, exercises and its tutor. Melete holds **how** to learn it, how to plan it and how to keep going. All 82 features in the compendium's app checklist are in scope, and you ticked all of them.
+A study-habits companion for every student. It sits next to noema-lite. noema-lite holds **what** to learn: subjects, sections, exercises and its tutor. Meletee holds **how** to learn it, how to plan it and how to keep going. All 82 features in the compendium's app checklist are in scope, and you ticked all of them.
 
 Rules that apply to every phase:
 
@@ -21,8 +21,8 @@ Rules that apply to every phase:
 | Front end | Vanilla JavaScript ES modules and plain CSS, no framework | Same as noema-lite, so the code can later be shared or merged. Fast, small and with nothing to upgrade. |
 | Build | A small Node script: copies, fingerprints and bundles into `dist/site`, plus an optional single-file HTML | Same idea as noema-lite's `tools/build.py`. |
 | Hosting | Netlify, static site | Same as noema-lite. |
-| Storage on device | localStorage for small state; IndexedDB for sessions, logs and drawings | Works offline. Keys are namespaced `melete1:<account>:…`, mirroring noema-lite's `noema1:` scheme. |
-| Cloud (optional) | The same Supabase project as noema-lite, with the same users and its own `melete_*` tables and row-level security | One sign-in for both apps. The two apps never write each other's rows. |
+| Storage on device | localStorage for small state; IndexedDB for sessions, logs and drawings | Works offline. Keys are namespaced `meletee1:<account>:…`, mirroring noema-lite's `noema1:` scheme. |
+| Cloud (optional) | The same Supabase project as noema-lite, with the same users and its own `meletee_*` tables and row-level security | One sign-in for both apps. The two apps never write each other's rows. |
 | Real-time (buddies) | Supabase Realtime channels | Synced Pomodoro rooms, pings and presence. |
 | Translations | `i18n/<lang>.json` for interface strings and `content/<lang>/*.json` for the compendium content | Content is generated from the compendium tabs, so the app and the doc say the same thing. |
 | AI | One `ai/` layer with two providers: Claude through the Messages API, called from the browser with the user's own key, and Gemini through the Generative Language API. A task router picks the provider for each tool. | Matches noema-lite: keys stay on the device and no server holds them. |
@@ -37,7 +37,7 @@ How the AI work is split. This is a default that can be changed in settings.
 | Question maker, hints, lightning quiz, error-log grouping | Gemini | JSON output with a schema; fast and cheap. |
 | Feynman coach, explain to a friend, why-chain partner, example coach | Claude | Long, patient conversations. |
 | Examiner (oral exam or interview), Method Lab coach, term plan in the schedule maker | Claude | Careful judgement and planning. |
-| Socratic tutor | Claude inside Melete | Has a "continue in noema-lite" button that opens noema-lite's own Gemini tutor on the same section. |
+| Socratic tutor | Claude inside Meletee | Has a "continue in noema-lite" button that opens noema-lite's own Gemini tutor on the same section. |
 
 Every AI conversation is saved as a `noema.conversation/v1` record, with `kind` set to feynman, teach-back, examiner and so on. noema-lite can then list them too.
 
@@ -112,7 +112,7 @@ Every workspace works without AI. Phase 4 adds the AI on top.
 
 ### Phase 6: Cloud and noema-lite
 
-- Sign in with the noema-lite account (the same Supabase project), sync Melete's own tables, and keep daily snapshots.
+- Sign in with the noema-lite account (the same Supabase project), sync Meletee's own tables, and keep daily snapshots.
 - Import a noema-lite subject as a course. Workspaces draw on its exercises, flashcards, playbooks and pitfalls.
 - Deep links into noema-lite (`?subject=…#/s/<section>`, practice, cards, mistakes). Its progress is read to suggest what to do next.
 - One shared review queue keyed by noema-lite ids, and results written back.

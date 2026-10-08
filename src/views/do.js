@@ -50,6 +50,8 @@ export function doView() {
     h('div.cards',
       h('a.card.row-card', { href: '#/do/reviews' },
         h('span', '🔁'), h('div', h('h3', t('do.reviews')), h('p.muted.small', due.length ? tn('do.dueCount', due.length) : t('do.noneDue')))),
+      h('a.card.row-card', { href: '#/ws' },
+        h('span', '🛠'), h('div', h('h3', t('do.workspaces')), h('p.muted.small', t('do.workspacesText')))),
       h('a.card.row-card', { href: '#/do/courses' },
         h('span', '📚'), h('div', h('h3', t('do.courses')), h('p.muted.small', courses.length ? tn('do.courseCount', courses.length) : t('do.coursesEmpty')))),
       h('a.card.row-card', { href: '#/do/plan' },

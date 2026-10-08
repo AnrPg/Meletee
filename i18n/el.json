@@ -1,5 +1,5 @@
 {
-  "app.name": "Melete",
+  "app.name": "Meletee",
   "nav.label": "Κύριο μενού",
   "nav.home": "Αρχή",
   "nav.learn": "Μάθε",
@@ -100,8 +100,8 @@
   "settings.export": "Αποθήκευση αντιγράφου",
   "settings.import": "Επαναφορά",
   "settings.restored": "Επαναφέρθηκαν {n} στοιχεία",
-  "settings.restoreFailed": "Αυτό το αρχείο δεν είναι αντίγραφο του Melete.",
-  "settings.about": "Το Melete δουλεύει μαζί με το noema-lite. Φτιαγμένο με φροντίδα για μαθητές και φοιτητές παντού.",
+  "settings.restoreFailed": "Αυτό το αρχείο δεν είναι αντίγραφο του Meletee.",
+  "settings.about": "Το Meletee δουλεύει μαζί με το noema-lite. Φτιαγμένο με φροντίδα για μαθητές και φοιτητές παντού.",
   "common.save": "Αποθήκευση",
   "common.cancel": "Άκυρο",
   "common.add": "Προσθήκη",
@@ -213,5 +213,13 @@
   "plan.termLede": "Οι εξετάσεις σου με τη σειρά, με τον ρυθμό που σε φτάνει εκεί με μια εβδομάδα περιθώριο.",
   "plan.examPast": "Η εξέταση πέρασε",
   "plan.daysLeft.one": "Απομένει {n} μέρα",
-  "plan.daysLeft.other": "Απομένουν {n} μέρες"
+  "plan.daysLeft.other": "Απομένουν {n} μέρες",
+  "ws.title": "Χώροι εργασίας",
+  "ws.lede": "Μια μικρή εργαλειοθήκη για κάθε τεχνική. Διάλεξε μία και ξεκίνα.",
+  "ws.readAbout": "Πώς λειτουργεί →",
+  "ws.common.topic": "Ενότητα",
+  "ws.common.anyTopic": "Οποιαδήποτε ενότητα",
+  "learn.openWorkspace": "Άνοιξε τον χώρο εργασίας",
+  "do.workspaces": "Χώροι εργασίας",
+  "do.workspacesText": "Μια εργαλειοθήκη για κάθε τεχνική"
 }

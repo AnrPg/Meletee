@@ -1,5 +1,5 @@
 {
-  "app.name": "Melete",
+  "app.name": "Meletee",
   "nav.label": "Main",
   "nav.home": "Home",
   "nav.learn": "Learn",
@@ -100,8 +100,8 @@
   "settings.export": "Save a backup",
   "settings.import": "Restore",
   "settings.restored": "Restored {n} items",
-  "settings.restoreFailed": "That file isn't a Melete backup.",
-  "settings.about": "Melete works alongside noema-lite. Made with care for students everywhere.",
+  "settings.restoreFailed": "That file isn't a Meletee backup.",
+  "settings.about": "Meletee works alongside noema-lite. Made with care for students everywhere.",
   "common.save": "Save",
   "common.cancel": "Cancel",
   "common.add": "Add",
@@ -213,5 +213,13 @@
   "plan.termLede": "Your exams in order, with the pace that gets you there with a week to spare.",
   "plan.examPast": "The exam has passed",
   "plan.daysLeft.one": "{n} day left",
-  "plan.daysLeft.other": "{n} days left"
+  "plan.daysLeft.other": "{n} days left",
+  "ws.title": "Workspaces",
+  "ws.lede": "A small toolshed for each technique. Pick one and start.",
+  "ws.readAbout": "How it works →",
+  "ws.common.topic": "Topic",
+  "ws.common.anyTopic": "Any topic",
+  "learn.openWorkspace": "Open workspace",
+  "do.workspaces": "Workspaces",
+  "do.workspacesText": "A toolshed for every technique"
 }

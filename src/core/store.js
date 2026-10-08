@@ -1,8 +1,8 @@
 // Namespaced local storage, mirroring noema-lite's scheme:
-//   melete1:<account>:a:<name>   account-wide data (settings, profile…)
-//   melete1:current              the active account id
+//   meletee1:<account>:a:<name>   account-wide data (settings, profile…)
+//   meletee1:current              the active account id
 // Values are JSON. Everything degrades to memory when storage is blocked.
-const PREFIX = 'melete1:';
+const PREFIX = 'meletee1:';
 const memory = new Map();
 const listeners = new Set();
 
@@ -47,7 +47,7 @@ export function remove(name) { removeItem(key(name)); }
 export function onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 
 // ---------- backup ----------
-export const BACKUP_FORMAT = 'melete-backup';
+export const BACKUP_FORMAT = 'meletee-backup';
 
 export function exportBackup() {
   const prefix = `${PREFIX}${account()}:`;
@@ -57,7 +57,7 @@ export function exportBackup() {
 }
 
 export function importBackup(obj) {
-  if (!obj || obj.format !== BACKUP_FORMAT || typeof obj.data !== 'object') throw new Error('not a melete backup');
+  if (!obj || obj.format !== BACKUP_FORMAT || typeof obj.data !== 'object') throw new Error('not a meletee backup');
   const prefix = `${PREFIX}${account()}:`;
   for (const [k, v] of Object.entries(obj.data)) if (typeof v === 'string') setItem(prefix + k, v);
   return Object.keys(obj.data).length;
