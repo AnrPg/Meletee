@@ -4,6 +4,7 @@ import * as router from './core/router.js';
 import * as store from './core/store.js';
 import { icon, logo } from './ui/art.js';
 import { registerViews, NAV } from './views/index.js';
+import { openParking } from './ui/parking.js';
 
 export function applyTheme(theme = store.get('settings', {}).theme || 'auto') {
   if (theme === 'auto') delete document.documentElement.dataset.theme;
@@ -18,6 +19,7 @@ function shell() {
   const top = h('header.topbar',
     h('a.brand', { href: '#/', 'aria-label': t('app.name') }, logo(), h('span', t('app.name'))),
     h('div.spacer'),
+    h('button.icon-btn', { 'aria-label': t('parking.title'), title: t('parking.title'), onclick: openParking }, icon('park')),
     h('a.icon-btn', { href: '#/settings', 'aria-label': t('nav.settings'), title: t('nav.settings') }, icon('settings')));
   document.getElementById('app').replaceChildren(h('div.app', top, main, nav));
   return { main, nav };

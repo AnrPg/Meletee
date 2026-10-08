@@ -114,3 +114,63 @@ a.card:hover,button.card:hover{transform:translateY(-2px);border-color:color-mix
 @keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
 @keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
 @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.025,.985)}}
+
+/* ---------- forms ---------- */
+.field{width:100%;min-height:46px;padding:10px 14px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--card);color:var(--ink);outline:none;transition:border-color var(--t1)}
+textarea.field{resize:vertical;line-height:1.5}
+.field:focus{border-color:var(--c)}
+.field.quiet{border-style:dashed;background:transparent}
+.field-row{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:650;color:var(--ink2)}
+.check{display:flex;align-items:center;gap:var(--s3);padding:6px 0;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--leaf);flex:none}
+.check input:checked+span{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--leaf)}
+.plain{list-style:none;margin:0;padding:0}
+.plain li{padding:6px 0;border-bottom:1px solid var(--line)}
+.btn.danger{background:var(--bad);box-shadow:none}
+.center{display:flex;flex-direction:column;align-items:center;text-align:center}
+.empty{text-align:center;padding:var(--s6) 0;display:flex;flex-direction:column;align-items:center;gap:var(--s2)}
+.empty>p:first-child{font-size:40px;margin:0}
+
+/* ---------- do ---------- */
+.focus-card{background:var(--c);color:#fff;border-color:transparent}
+.focus-card .muted{color:rgba(255,255,255,.8)}
+.focus-card .play{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.18);font-size:18px;flex:none}
+.card.exam{background:var(--warn-bg);border-color:transparent;box-shadow:none}
+.row-card{display:flex;align-items:center;gap:var(--s4)}
+.row-card>span{font-size:26px;flex:none}
+.row-card h3{margin:0}
+.row-card p{margin:0}
+.soft-card{background:var(--bg2);border-color:transparent;box-shadow:none}
+.progress{height:6px;border-radius:6px;background:var(--bg2);overflow:hidden;margin-top:var(--s3)}
+.progress span{display:block;height:100%;background:var(--leaf);border-radius:6px;transition:width var(--t3) var(--ease-soft)}
+.dots{display:inline-flex;gap:3px;flex:none}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--leaf)}
+.list .label{min-width:0;overflow-wrap:anywhere}
+.leaving{animation:leave .25s var(--ease-soft) forwards}
+@keyframes leave{to{opacity:0;transform:translateX(24px)}}
+
+/* ---------- focus ring ---------- */
+.ring{position:relative;width:min(260px,72vw);aspect-ratio:1;max-width:100%}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-track{fill:none;stroke:var(--bg2);stroke-width:10}
+.ring-arc{fill:none;stroke:var(--c);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .25s linear}
+.ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-time{font-size:clamp(44px,12vw,60px);font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.ring-label{color:var(--ink2);font-weight:650;font-size:14px}
+.celebrate .companion{width:120px;height:120px;animation:hop .9s var(--ease) 2}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px) rotate(-4deg)}}
+
+/* ---------- week ---------- */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--s2);align-items:end}
+.week .day{display:flex;flex-direction:column;align-items:center;gap:4px}
+.week .bar{width:100%;max-width:28px;border-radius:8px;background:var(--c-bg)}
+.week .bar[data-empty="true"]{background:var(--bg2)}
+.days{display:grid;gap:var(--s2)}
+@media (min-width:720px){.days{grid-template-columns:repeat(7,1fr)}}
+.daycol{display:flex;flex-direction:column;gap:6px;padding:var(--s3);border-radius:var(--r-sm);background:var(--card);border:1px solid var(--line);min-width:0}
+.daycol[data-today="true"]{border-color:var(--c)}
+.block{text-align:left;padding:6px 10px;border-radius:10px;background:var(--c-bg);font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.block>span:first-child{font-variant-numeric:tabular-nums;color:var(--c)}
+.add{align-self:flex-start;width:32px;height:32px;border-radius:50%;color:var(--ink3);border:1px dashed var(--line)}
+.add:hover{color:var(--c);border-color:var(--c)}

@@ -64,7 +64,7 @@ test('settings switch language and theme, backup round-trips', async ({ page }) 
 
 test('no horizontal scroll on a phone', async ({ page }, info) => {
   test.skip(info.project.name !== 'phone');
-  for (const hash of ['', '#/learn', '#/learn/methods', '#/settings', '#/do']) {
+  for (const hash of ['', '#/learn', '#/learn/methods', '#/settings', '#/do', '#/do/focus', '#/do/plan', '#/do/courses']) {
     await open(page, 'el', hash);
     await page.waitForSelector('main .view > *');
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
