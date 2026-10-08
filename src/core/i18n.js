@@ -24,7 +24,7 @@ export function detect() {
 
 // Workspace strings live in their own bundles (i18n/ws/<group>.<lang>.json) so
 // each group of tools can be translated on its own.
-export const EXTRA = ['ws/a', 'ws/b', 'ws/c', 'ai', 'grow', 'cloud', 'buddies'];
+export const EXTRA = ['ws/a', 'ws/b', 'ws/c', 'ai', 'grow', 'cloud', 'buddies', 'meta'];
 
 async function fetchJSON(path) {
   try {
