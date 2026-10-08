@@ -1,1 +1,105 @@
-/* buddies */
+/* buddies (phase 7): calm, roomy, tokens only */
+.bud-back{margin-left:-12px;align-self:flex-start}
+.stack-lg>.bud-back{display:inline-flex}
+
+/* avatars: an emoji in a soft circle */
+.bud-avatar{width:40px;height:40px;flex:none;border-radius:50%;display:inline-grid;place-items:center;font-size:22px;line-height:1;background:var(--c-bg)}
+.bud-avatar.big{width:96px;height:96px;font-size:52px;margin-bottom:var(--s4);background:var(--peach-bg)}
+.bud-hero{padding-top:var(--s4)}
+.bud-hero .lede{margin-bottom:var(--s3)}
+
+/* signed out */
+.bud-idea{display:flex;gap:var(--s4);align-items:flex-start}
+.bud-idea-emoji{font-size:26px;line-height:1.2;flex:none}
+.bud-idea h3{margin:0 0 var(--s1)}
+.bud-idea p{margin:0}
+
+/* home */
+.bud-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--s4)}
+.bud-head h1{margin-bottom:var(--s2)}
+.bud-me{flex:none;border-radius:50%;text-decoration:none}
+.bud-me:focus-visible{outline:2px solid var(--c);outline-offset:3px}
+.bud-inbox .plain li{border-bottom:none;padding:4px 0}
+.bud-inbox-row{flex-wrap:nowrap;gap:var(--s3)}
+.bud-inbox-row>span:last-child{min-width:0;overflow-wrap:anywhere}
+.bud-list>.bud-row{flex-wrap:nowrap;align-items:center}
+.bud-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.bud-name{font-weight:700;color:var(--ink);text-decoration:none;overflow-wrap:anywhere}
+.bud-name:hover{color:var(--c)}
+.bud-glance{gap:6px}
+.bud-glance .badge{white-space:nowrap}
+.badge.bud-live{background:var(--c-bg);color:var(--c)}
+.bud-cheer-btn{flex:none;min-width:44px;padding:0 var(--s3);font-size:18px}
+
+/* cheers sheet */
+.bud-presets{display:flex;flex-direction:column;gap:var(--s2)}
+.bud-preset{justify-content:flex-start;text-align:left;min-height:44px;width:100%;color:var(--ink)}
+.bud-preset:hover{border-color:var(--c)}
+
+/* buddy page */
+.bud-more{align-self:center;text-align:center;color:var(--ink2)}
+.bud-more summary{cursor:pointer;font-weight:650;font-size:14px;list-style:none;padding:var(--s2)}
+.bud-more summary::-webkit-details-marker{display:none}
+.bud-more[open] summary{margin-bottom:var(--s2)}
+.bud-more .stack{align-items:center;display:flex;flex-direction:column}
+.btn.bud-danger{color:var(--bad)}
+
+/* card form */
+.bud-card-top{flex-wrap:nowrap;align-items:flex-end}
+.bud-card-top .bud-avatar.big{width:64px;height:64px;font-size:34px;margin:0}
+.bud-grow{flex:1;min-width:0}
+.bud-fieldset{border:0;padding:0;margin-inline:0;min-width:0}
+.bud-fieldset legend{font-weight:700;padding:0;margin-bottom:var(--s2)}
+.bud-emojis{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:var(--s2)}
+.bud-emoji{height:44px;border-radius:var(--r-sm);font-size:22px;border:1px solid var(--line);background:var(--card);transition:transform var(--t1) var(--ease)}
+.bud-emoji:hover{transform:scale(1.06)}
+.bud-emoji[aria-checked="true"]{background:var(--c-bg);border-color:var(--c)}
+.bud-emoji:focus-visible,.bud-toggle input:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.bud-toggles{display:flex;flex-direction:column;gap:var(--s2);margin-top:var(--s3)}
+.bud-toggle{display:flex;gap:var(--s3);align-items:flex-start;padding:var(--s3);border-radius:var(--r-sm);background:var(--bg2);cursor:pointer}
+.bud-toggle input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--c)}
+.bud-toggle>span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bud-toggle-title{font-weight:650;color:var(--ink)}
+
+/* invites */
+.bud-invite{align-items:center;text-align:center;width:100%}
+.bud-code{font-family:var(--mono);font-size:clamp(26px,8vw,34px);font-weight:700;letter-spacing:.14em;margin:0;color:var(--c);overflow-wrap:anywhere}
+.bud-full{width:100%;text-align:left}
+.bud-link{font-size:13px;font-family:var(--mono)}
+.bud-enter{max-width:24rem}
+
+/* rooms */
+.bud-room .ring{margin:0 auto}
+.bud-mode{margin:0}
+.bud-controls{width:100%}
+.bud-people{display:flex;flex-direction:column;gap:var(--s2)}
+.bud-people .bud-person{display:flex;align-items:center;gap:var(--s3);border-bottom:none;padding:var(--s2) var(--s3);border-radius:var(--r-sm);background:var(--bg2)}
+.bud-person-name{flex:1;min-width:0;font-weight:650;overflow-wrap:anywhere}
+.bud-person[data-status="focus"] .bud-avatar{box-shadow:0 0 0 2px var(--c)}
+.bud-person[data-status="break"] .bud-avatar{box-shadow:0 0 0 2px var(--leaf)}
+.bud-room-card .bud-avatar{font-size:22px}
+
+/* goals and challenges */
+.bud-goal h3{margin:0 0 var(--s1)}
+.bud-goal p{margin:0}
+.bud-progress{height:8px}
+.bud-goal[data-kind="team"] .bud-progress span{background:var(--c)}
+.bud-members{display:flex;flex-direction:column;gap:var(--s2)}
+.bud-members li,.bud-board li{border-bottom:none;padding:0}
+.bud-member{flex-wrap:nowrap;gap:var(--s3)}
+.bud-member .bud-avatar{width:32px;height:32px;font-size:18px}
+.bud-member .muted{white-space:nowrap}
+.bud-total{font-size:15px}
+.bud-yay{font-weight:700;color:var(--leaf)}
+.bud-join{gap:var(--s3)}
+.bud-board{display:flex;flex-direction:column;gap:var(--s2)}
+.bud-crown{width:22px;text-align:center;flex:none}
+.bud-board li[data-top="true"] .bud-grow{font-weight:700}
+.bud-rules li{padding:var(--s3) 0}
+.bud-optout{align-self:center;display:flex;margin:0 auto}
+.bud-last .plain li{padding:var(--s2) 0}
+.bud-trouble h2{margin:0}
+
+@media (max-width:420px){
+  .bud-member .muted{white-space:normal;text-align:right}
+}

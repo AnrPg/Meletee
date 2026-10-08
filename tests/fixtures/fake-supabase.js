@@ -32,6 +32,7 @@
 
   W.__fakeSeed = (seed) => { const db = load(); Object.assign(db, seed); save(db); };
   W.__fakeDb = load;
+  W.__fakeSave = save;
   W.__meleteeSupabase = {
     fake: true,
     session() { return JSON.parse(LS.getItem(SK) || 'null'); },
@@ -72,6 +73,16 @@
       db.tables[table] = (db.tables[table] || []).filter((r) => !(r.user_id === uid() && match(r, filters)));
       db.log.push({ op: 'remove', table });
       save(db);
+    },
+    // SQL functions (POST /rest/v1/rpc/<fn>): a test defines window.__fakeRpc[fn] = (db, args, uid) => result.
+    async rpc(fn, args = {}) {
+      const db = fail();
+      const f = W.__fakeRpc?.[fn];
+      if (!f) throw new Error(`Could not find the function public.${fn}`);
+      const out = f(db, args, uid());
+      db.log.push({ op: 'rpc', fn });
+      save(db);
+      return out === undefined ? null : JSON.parse(JSON.stringify(out));
     },
     async download(bucket, path) {
       const db = fail(); const v = db.storage[`${bucket}/${path}`];
