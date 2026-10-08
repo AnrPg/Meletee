@@ -10,6 +10,7 @@ import { workspaces, workspace } from './workspace.js';
 import { settings } from './settings.js';
 import { registerGrow } from './grow/index.js';
 import { registerBuddies } from './buddies/index.js';
+import { registerCloud } from '../cloud/routes.js';
 import { h } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 
@@ -40,6 +41,7 @@ export function registerViews(router) {
   router.route('/ws/:id', workspace);
   registerGrow(router);
   registerBuddies(router);
+  registerCloud(router);
   router.route('/settings', settings);
 }
 
