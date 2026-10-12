@@ -70,3 +70,17 @@ test('flat view: every tool, a search, and the choice is remembered (Greek)', as
   expect(await noSideScroll(page)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('narrow screens never scroll sideways (the bottom bar shrinks to fit)', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  const errors = await open(page, '#/learn/method/feynman-technique-explain-it-simply', { lang: 'el' });
+  for (const h of ['#/learn/method/feynman-technique-explain-it-simply', '#/ws', '#/do', '#/buddies']) {
+    await page.evaluate((x) => { location.hash = x; }, h);
+    await expect(page.locator('nav.nav')).toBeVisible();
+    const box = await page.locator('nav.nav').boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(320);
+    expect(await noSideScroll(page)).toBe(true);
+  }
+  expect(errors).toEqual([]);
+});

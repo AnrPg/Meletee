@@ -1,8 +1,8 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;overflow-x:hidden;overflow-x:clip}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.6;
-  -webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;overflow-x:hidden}
+  -webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;overflow-x:hidden;overflow-x:clip}
 button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer;border:none;background:none;padding:0}
 input,textarea,select{font-family:inherit;font-size:inherit;color:var(--ink)}
 a{color:var(--c);text-decoration-thickness:1px;text-underline-offset:2px}

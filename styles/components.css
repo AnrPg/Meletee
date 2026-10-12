@@ -14,8 +14,9 @@ main{flex:1;width:100%;max-width:calc(var(--measure) + 2*var(--s4));margin:0 aut
 /* ---------- bottom navigation: one quiet floating pill ---------- */
 .nav{position:fixed;left:50%;bottom:max(var(--s4),env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;
   display:flex;gap:2px;padding:6px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--card) 96%,transparent);
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow);border:1px solid var(--line)}
-.nav a{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:64px;padding:6px 10px;border-radius:var(--r-pill);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow);border:1px solid var(--line);
+  max-width:calc(100vw - 16px);box-sizing:border-box}
+.nav a{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;flex:0 1 64px;padding:6px 10px;border-radius:var(--r-pill);
   font-size:11.5px;font-weight:650;color:var(--ink2);text-decoration:none;transition:color var(--t1),background var(--t1)}
 .nav a svg{width:22px;height:22px}
 .nav a[aria-current="page"]{color:var(--c);background:var(--c-bg)}
@@ -67,7 +68,7 @@ a.card:hover,button.card:hover{transform:translateY(-2px);border-color:color-mix
 .badge.leaf{background:var(--leaf-bg);color:var(--leaf-ink)}
 
 /* ---------- prose (compendium html) ---------- */
-.prose{max-width:var(--measure)}
+.prose{max-width:var(--measure);overflow-wrap:break-word}
 .prose p{margin:0 0 var(--s3)}
 .prose ul,.prose ol{padding-left:1.3em;margin:0 0 var(--s3)}
 .prose li{margin:2px 0}
