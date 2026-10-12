@@ -61,8 +61,9 @@ const focusables = (root) => [...root.querySelectorAll(FOCUSABLE)].filter((el) =
 
 // A bottom sheet (a modal dialog). Focus stays inside while it is open (Tab and Shift+Tab wrap),
 // Escape or a tap on the backdrop closes it, and focus returns to whatever opened it.
-// Returns a close function.
-export function sheet(content, { label } = {}) {
+// Returns a close function. `side: true` slides it in from the right on wide screens;
+// `onClose` runs however it closes.
+export function sheet(content, { label, side = false, onClose } = {}) {
   const prev = document.activeElement;
   let closed = false;
   const close = () => {
@@ -70,6 +71,7 @@ export function sheet(content, { label } = {}) {
     closed = true;
     back.remove(); document.removeEventListener('keydown', onKey, true);
     if (prev?.isConnected) prev.focus?.();
+    onClose?.();
   };
   const onKey = (e) => {
     if (!back.isConnected) { document.removeEventListener('keydown', onKey, true); return; }
@@ -86,7 +88,7 @@ export function sheet(content, { label } = {}) {
     else if (!e.shiftKey && (document.activeElement === last || !inside)) { e.preventDefault(); first.focus(); }
   };
   const box = h('div.sheet', { role: 'dialog', 'aria-modal': 'true', 'aria-label': label, tabindex: '-1' }, h('div.grip', { 'aria-hidden': 'true' }), content);
-  const back = h('div.sheet-backdrop', { onclick: (e) => { if (e.target === back) close(); } }, box);
+  const back = h(side ? 'div.sheet-backdrop.side' : 'div.sheet-backdrop', { onclick: (e) => { if (e.target === back) close(); } }, box);
   document.body.append(back);
   document.addEventListener('keydown', onKey, true);
   box.focus();

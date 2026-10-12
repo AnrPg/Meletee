@@ -48,6 +48,7 @@ test('signed out: the welcome screen stands in for every screen except the priva
   await expect(page.getByRole('button', { name: 'Sign in with your noema-lite account' })).toBeVisible();
   await expect(page.getByText('One account works in both apps')).toBeVisible();
   await expect(page.locator('.welcome-local')).toHaveCount(0);           // nothing from before on this device
+  await expect(page.locator('.welcome')).not.toContainText('null');     // absent notes leave nothing behind
   await expect(page.locator('nav.nav')).toBeHidden();
   await expect(page.getByRole('heading', { name: 'Courses' })).toHaveCount(0);
   for (const r of ['#/', '#/settings', '#/grow', '#/buddies', '#/ws/recall']) {

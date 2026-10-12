@@ -206,9 +206,10 @@ test('group a renders in Greek and Russian', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('workspace list shows hints for group a', async ({ page }) => {
+test('flat tool list shows hints for group a', async ({ page }) => {
   const errors = await open(page, '#/ws', { lang: 'fr' });
-  for (const id of ['recall', 'srs', 'interleave', 'pretest', 'relearn']) await expect(page.locator(`a[href="#/ws/${id}"] p`)).not.toHaveText(`ws.${id}.hint`);
+  await page.getByRole('button', { name: 'En vrac' }).click();
+  for (const id of ['deck', 'quiz', 'leitner', 'mix', 'guess', 'relearn']) await expect(page.locator(`[data-tool="${id}"] p`)).not.toHaveText(`tools.${id}.hint`);
   await expect(page.getByText('Ferme le livre, réponds de mémoire, puis vérifie.')).toBeVisible();
   expect(errors).toEqual([]);
 });

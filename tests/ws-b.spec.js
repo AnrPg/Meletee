@@ -226,6 +226,7 @@ test('group b renders in Greek and in dark mode', async ({ page }) => {
   const ink = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ink').trim());
   expect(ink).toBe('#eef0f6');
   await page.goto('/#/ws');
+  await page.getByRole('button', { name: 'Χύμα' }).click();
   await expect(page.getByText('Εξήγησέ το σε ένα 12χρονο και δες πού κολλάς.')).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -42,7 +42,9 @@ export function registerViews(router) {
   router.route('/do/reviews', lazy(() => import('./reviews.js'), 'reviews'));
   router.route('/do/plan', lazy(() => import('./plan.js'), 'plan'));
   router.route('/ws', lazy(ws, 'workspaces'));
+  router.route('/ws/shed/:id', lazy(ws, 'workspaces'));
   router.route('/ws/:id', lazy(ws, 'workspace'));
+  router.route('/ws/:id/:tab', lazy(ws, 'workspace'));
   registerGrow(router, lazy);
   const bud = (k) => lazy(buddies, (m) => m.views[k]);
   router.route('/buddies', bud('home'));

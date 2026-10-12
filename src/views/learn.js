@@ -2,7 +2,7 @@ import { h } from '../core/dom.js';
 import { t } from '../core/i18n.js';
 import { index, item as findItem, section as findSection } from '../core/content.js';
 import { icon } from '../ui/art.js';
-import { forItem } from '../workspaces/registry.js';
+import { shed, tool } from '../workspaces/tools.js';
 export { find } from './find.js';
 
 const KIND_EMOJI = {
@@ -59,11 +59,11 @@ export async function method({ id }) {
   const block = (title, html) => html ? h('section', h('h3', { style: { marginBottom: '8px' } }, title), h('div.prose', { html })) : null;
   const hasParts = it.structured && (p.why || p.how);
   const ex = p.examples || {};
-  const ws = forItem(it.id);
+  const ws = shed(it.id);
   return h('article.stack-lg',
     h('div', header(s.title, it.title, null, s.kind === 'techniques' ? '#/learn/methods' : `#/learn/guide/${s.id}`),
       (timeBadge(it) || ws || ['techniques', 'notes', 'memory'].includes(s.kind)) ? h('div.row', { style: { marginTop: '12px' } }, timeBadge(it),
-        ws ? h('a.btn.soft.small', { href: `#/ws/${ws.id}` }, ws.emoji, ' ', t('learn.openWorkspace')) : null,
+        ws ? h('a.btn.soft.small', { href: `#/ws/shed/${ws.id}` }, tool(ws.tools[0]).emoji, ' ', t('learn.openWorkspace')) : null,
         ['techniques', 'notes', 'memory'].includes(s.kind) ? h('a.btn.ghost.small', { href: `#/grow/lab/new/${it.id}` }, '🧪 ', t('grow.lab.start')) : null) : null),
     hasParts
       ? h('div.stack-lg',

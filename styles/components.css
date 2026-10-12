@@ -90,6 +90,34 @@ a.card:hover,button.card:hover{transform:translateY(-2px);border-color:color-mix
 .sheet .grip{width:40px;height:4px;border-radius:4px;background:var(--line);margin:-8px auto var(--s4)}
 @media (min-width:640px){.sheet-backdrop{align-items:center}.sheet{border-radius:var(--r)}}
 @keyframes sheetIn{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+/* side sheet: slides in from the right on wide screens, a bottom sheet on phones */
+@media (min-width:760px){
+  .sheet-backdrop.side{align-items:stretch;justify-content:flex-end}
+  .sheet-backdrop.side .sheet{max-width:26rem;max-height:none;height:100%;border-radius:var(--r) 0 0 var(--r);animation:sideIn var(--t2) var(--ease) both;padding-top:var(--s6,32px)}
+  .sheet-backdrop.side .grip{display:none}
+}
+@keyframes sideIn{from{transform:translateX(32px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet-backdrop.side .sheet{animation:none}}
+
+/* ---------- toolshed (#/ws) ---------- */
+.shed-groups{gap:var(--s2)}
+.shed-group{border-bottom:1px solid var(--line);padding:var(--s2) 0}
+.shed-group>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:var(--s3);padding:var(--s3) 0;font-weight:700}
+.shed-group>summary::-webkit-details-marker{display:none}
+.shed-group>summary::after{content:'›';color:var(--ink2);transition:transform var(--t2) var(--ease);margin-left:auto}
+.shed-group[open]>summary::after{transform:rotate(90deg)}
+.shed-group>summary>.muted{order:2}
+.shed-list{display:grid;gap:var(--s1,4px);padding-bottom:var(--s3)}
+@media (min-width:560px){.shed-list{grid-template-columns:1fr 1fr}}
+.shed-row{display:flex;align-items:center;gap:var(--s3);width:100%;text-align:left;padding:10px var(--s3);border-radius:var(--r);color:inherit;transition:background var(--t1)}
+.shed-row:hover,.shed-row:focus-visible{background:var(--bg2)}
+.shed-emoji{font-size:20px;flex:none;width:28px;text-align:center}
+.shed-name{flex:1;min-width:0;font-weight:600}
+.shed-row .muted{flex:none}
+.tool-card{padding:var(--s4)}
+.shed-head>button{flex:none}
+.shed-panel .tool-card>span{font-size:22px}
+.tool-card h3{font-size:16px}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 
 /* ---------- toast ---------- */

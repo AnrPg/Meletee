@@ -221,12 +221,12 @@
   "plan.daysLeft.other": "{n} jours restants",
   "plan.daysLeft.few": "{n} jours restants",
   "plan.daysLeft.many": "{n} jours restants",
-  "ws.title": "Espaces de travail",
-  "ws.lede": "Une petite boîte à outils pour chaque technique. Choisis-en une et lance-toi.",
+  "ws.title": "Boîte à outils",
+  "ws.lede": "Une boîte à outils par technique, ou tous les outils en une liste. Mêmes outils, mêmes notes.",
   "ws.readAbout": "Comment ça marche →",
   "ws.common.topic": "Sujet",
   "ws.common.anyTopic": "N’importe quel sujet",
-  "learn.openWorkspace": "Ouvrir l’espace de travail",
-  "do.workspaces": "Espaces de travail",
-  "do.workspacesText": "Une boîte à outils pour chaque technique"
+  "learn.openWorkspace": "Ouvrir sa boîte à outils",
+  "do.workspaces": "Boîte à outils",
+  "do.workspacesText": "Des outils pour chaque technique"
 }

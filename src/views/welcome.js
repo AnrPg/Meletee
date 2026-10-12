@@ -109,7 +109,8 @@ export function welcome() {
     let heading;
     if (mode === 'start') {
       heading = h('h1', { tabindex: '-1' }, t('welcome.title'));
-      root.replaceChildren(
+      // replaceChildren() would print a null as the word "null": drop the absent notes first
+      root.replaceChildren(...[
         companion({ mood: 'happy', leaves: 2, label: t('companion.label') }),
         heading,
         h('p.lede', t('welcome.lede')),
@@ -120,7 +121,7 @@ export function welcome() {
           h('button.btn.soft', { type: 'button', onclick: () => { mode = 'in'; draw(true); } },
             h('span', { 'aria-hidden': 'true' }, '🦉 '), t('welcome.withNoema'))),
         h('p.small.muted.welcome-one', t('welcome.oneAccount')),
-        h('div.welcome-foot', langPicker(), h('a.small', { href: '#/privacy' }, t('welcome.privacy'))));
+        h('div.welcome-foot', langPicker(), h('a.small', { href: '#/privacy' }, t('welcome.privacy')))].filter(Boolean));
     } else if (mode === 'confirm') {
       heading = h('h1', { tabindex: '-1' }, '✉️ ', t('welcome.confirmTitle'));
       root.replaceChildren(

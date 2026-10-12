@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.2.0 (2026-10-12)
+
+### A toolshed for every technique
+- Tools are now separate from techniques. The 15 workspaces are split into the tools they hold (the shared deck,
+  the recall quiz, Cornell notes, the memory palace…) and joined by the tools that live elsewhere (focus timer,
+  thought parking, plan, today's reviews, courses, today's top 3, method lab, wins, weekly reflection, worry
+  dump, breathing, my why, buddies): 37 tools in all (`src/workspaces/tools.js`).
+- A toolshed is a view over those tools for one compendium technique: 77 toolsheds, covering every method in
+  Learn and the planning, focus, wellbeing, motivation and exam techniques. A tool can sit in many toolsheds and
+  keeps one set of data.
+- `#/ws` has a view switch, remembered per device: *By technique* (groups that fold, a tap opens the toolshed
+  in a side panel, a bottom sheet on phones) or *All tools* (every tool in one list, with a search).
+  `#/ws/shed/<technique>` opens a panel directly, `#/ws/<workspace>/<tab>` opens one tool of a workspace, and
+  Back from a tool returns to the open panel. Learn's button on every technique opens its toolshed.
+- "Workspaces" is now called "Toolshed" in all four languages.
+
+### Fixed
+- The welcome screen printed "nullnull" under its intro when there was no note to show.
+
 ## 1.1.0 (2026-10-08)
 
 ### An account for everyone, so nothing is ever lost
